@@ -23,8 +23,10 @@ interface PredictionRow {
 
 function PredictionCard({ prediction }: { prediction: PredictionRow }) {
   const [expanded, setExpanded] = useState(false)
-  const top = prediction.predicted_codes.filter(p => p.above_threshold).slice(0, 3)
-  const topConcepts = prediction.activated_concepts.filter(c => c.active).slice(0, 6)
+  const codes = Array.isArray(prediction.predicted_codes) ? prediction.predicted_codes : []
+  const concepts = Array.isArray(prediction.activated_concepts) ? prediction.activated_concepts : []
+  const top = codes.filter(p => p.above_threshold).slice(0, 3)
+  const topConcepts = concepts.filter(c => c.active).slice(0, 6)
   const date = new Date(prediction.created_at)
 
   return (
@@ -55,9 +57,9 @@ function PredictionCard({ prediction }: { prediction: PredictionRow }) {
                 {p.code}
               </span>
             ))}
-            {prediction.predicted_codes.filter(p => p.above_threshold).length > 3 && (
+            {codes.filter(p => p.above_threshold).length > 3 && (
               <span className="text-xs px-2 py-0.5 rounded-lg" style={{ background: 'var(--glass-bg)', color: 'var(--text-muted)' }}>
-                +{prediction.predicted_codes.filter(p => p.above_threshold).length - 3} more
+                +{codes.filter(p => p.above_threshold).length - 3} more
               </span>
             )}
           </div>
@@ -111,7 +113,7 @@ function PredictionCard({ prediction }: { prediction: PredictionRow }) {
               Top diagnoses
             </p>
             <div className="space-y-2">
-              {prediction.predicted_codes.filter(p => p.above_threshold).slice(0, 6).map(p => (
+              {codes.filter(p => p.above_threshold).slice(0, 6).map(p => (
                 <div key={p.code} className="flex items-center gap-3">
                   <span className="font-mono text-xs w-16 shrink-0" style={{ color: 'var(--accent)' }}>{p.code}</span>
                   <span className="text-xs flex-1 truncate" style={{ color: 'var(--text-primary)' }}>{p.description}</span>
@@ -179,18 +181,27 @@ export default function HistoryPage() {
   const PAGE = 20
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase
-      .from('predictions')
-      .select('id,note_source,input_text,predicted_codes,activated_concepts,inference_time_ms,created_at')
-      .order('created_at', { ascending: false })
-      .limit(PAGE + 1)
-      .then(({ data }) => {
+    async function load() {
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('predictions')
+          .select('id,note_source,input_text,predicted_codes,activated_concepts,inference_time_ms,created_at')
+          .order('created_at', { ascending: false })
+          .limit(PAGE + 1)
+
+        if (error) throw error
         const rows = data ?? []
         setHasMore(rows.length > PAGE)
         setPredictions(rows.slice(0, PAGE) as PredictionRow[])
+      } catch (err) {
+        console.error('Failed to load history:', err)
+        setPredictions([])
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+    load()
   }, [])
 
   return (

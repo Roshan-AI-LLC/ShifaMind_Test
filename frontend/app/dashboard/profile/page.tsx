@@ -42,23 +42,28 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
 
-      const [profileRes, predRes, chatRes, reviewRes] = await Promise.all([
-        supabase.from('doctors').select('*').eq('id', user.id).single(),
-        supabase.from('predictions').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
-        supabase.from('chat_sessions').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
-        supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
-      ])
+        const [profileRes, predRes, chatRes, reviewRes] = await Promise.all([
+          supabase.from('doctors').select('*').eq('id', user.id).single(),
+          supabase.from('predictions').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
+          supabase.from('chat_sessions').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
+          supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
+        ])
 
-      setProfile(profileRes.data as DoctorProfile)
-      setStats({
-        predictions: predRes.count ?? 0,
-        chats: chatRes.count ?? 0,
-        reviews: reviewRes.count ?? 0,
-      })
-      setLoading(false)
+        if (profileRes.data) setProfile(profileRes.data as DoctorProfile)
+        setStats({
+          predictions: predRes.count ?? 0,
+          chats: chatRes.count ?? 0,
+          reviews: reviewRes.count ?? 0,
+        })
+      } catch (err) {
+        console.error('Failed to load profile:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [])
