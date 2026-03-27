@@ -45,20 +45,18 @@ function initAuth() {
       .then(({ data: { user } }) => {
         _user = user
         if (user) {
-          supabase
-            .from('doctors')
-            .select('*')
-            .eq('id', user.id)
-            .single()
-            .then(({ data }) => {
+          void (async () => {
+            try {
+              const { data } = await supabase
+                .from('doctors')
+                .select('*')
+                .eq('id', user.id)
+                .single()
               _doctor = data
-              _loading = false
-              notify()
-            })
-            .catch(() => {
-              _loading = false
-              notify()
-            })
+            } catch {}
+            _loading = false
+            notify()
+          })()
         } else {
           _loading = false
           notify()
@@ -76,16 +74,17 @@ function initAuth() {
         _loading = false
         notify()
       } else {
-        supabase
-          .from('doctors')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
+        void (async () => {
+          try {
+            const { data } = await supabase
+              .from('doctors')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
             _doctor = data
-            notify()
-          })
-          .catch(() => notify())
+          } catch {}
+          notify()
+        })()
       }
     })
   }).catch(() => {
