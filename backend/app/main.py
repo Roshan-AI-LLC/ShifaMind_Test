@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
-from .routers import health
+from .routers import health, predict, notes
 from .models.loader import load_model
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
@@ -46,7 +46,9 @@ def create_app() -> FastAPI:
 
     # Routers
     app.include_router(health.router, prefix="/api")
-    # predict, notes, chat, reviews — added in Parts 2 & 3
+    app.include_router(predict.router, prefix="/api")
+    app.include_router(notes.router, prefix="/api")
+    # chat, reviews — added in Parts 3 & 4
 
     return app
 
