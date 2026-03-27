@@ -156,7 +156,7 @@ export function NoteInput({ onSubmit, loading }: NoteInputProps) {
           value={text}
           onChange={e => setText(e.target.value)}
           placeholder="Paste or type a clinical note here…&#10;&#10;e.g. 72M presented with progressive dyspnea, orthopnea, and bilateral lower extremity edema..."
-          className="flex-1 min-h-[320px] w-full p-4 rounded-xl text-sm font-mono resize-none outline-none transition-all leading-relaxed"
+          className="flex-1 min-h-[200px] lg:min-h-[320px] w-full p-4 rounded-xl text-sm font-mono resize-none outline-none transition-all leading-relaxed"
           style={{
             background: 'var(--glass-bg)',
             border: `1px solid ${overLimit ? 'rgba(255,107,107,0.5)' : 'var(--glass-border)'}`,
@@ -172,12 +172,21 @@ export function NoteInput({ onSubmit, loading }: NoteInputProps) {
             e.target.style.borderColor = overLimit ? 'rgba(255,107,107,0.5)' : 'var(--glass-border)'
             e.target.style.boxShadow = 'none'
           }}
+          onKeyDown={e => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+              e.preventDefault()
+              if (text.trim() && !loading) onSubmit(text.trim())
+            }
+          }}
         />
         {/* Token count */}
         <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: overLimit ? 'var(--accent-warm)' : 'var(--text-muted)' }}>
-            ~{tokenCount} tokens{overLimit ? ' — note will be truncated to 512 tokens' : ''}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs" style={{ color: overLimit ? 'var(--accent-warm)' : 'var(--text-muted)' }}>
+              ~{tokenCount} tokens{overLimit ? ' — truncated to 512' : ''}
+            </span>
+            <span className="hidden sm:inline text-xs" style={{ color: 'var(--text-muted)' }}>⌘↵ to analyze</span>
+          </div>
           {text && (
             <button
               type="button"

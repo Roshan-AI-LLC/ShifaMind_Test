@@ -3,7 +3,10 @@ import { ToastProvider } from '@/components/shared/Toast'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'ShifaMind Platform',
+  title: {
+    template: '%s — ShifaMind',
+    default: 'ShifaMind Platform',
+  },
   description: 'AI-assisted clinical decision support for physicians',
 }
 

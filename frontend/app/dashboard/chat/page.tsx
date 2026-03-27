@@ -72,7 +72,7 @@ function ChatContent() {
 
   return (
     // -m-6 removes the layout's p-6, giving us edge-to-edge chat
-    <div className="-m-6 flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
+    <div className="-m-6 flex flex-col" style={{ height: 'calc(100dvh - 112px)' }}>
       <div className="flex flex-1 overflow-hidden">
         {/* Main chat area */}
         <div className="flex-1 flex flex-col min-w-0">

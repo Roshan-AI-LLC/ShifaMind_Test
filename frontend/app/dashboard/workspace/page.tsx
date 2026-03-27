@@ -104,7 +104,7 @@ export default function WorkspacePage() {
           )}
 
           {result && !loading && (
-            <GlassCard className="p-6 flex flex-col h-full">
+            <GlassCard className="p-6 flex flex-col h-full animate-fade-in">
               {/* Header */}
               <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
@@ -116,6 +116,11 @@ export default function WorkspacePage() {
                     style={{ background: 'var(--glass-bg)', color: 'var(--text-muted)' }}
                   >
                     {result.metadata.inference_time_ms}ms
+                  </span>
+                  <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-muted)' }}>
+                    {result.predictions.filter(p => p.above_threshold).length} active
+                    {' · '}
+                    {result.activated_concepts.filter(c => c.active).length} concepts
                   </span>
                   {isDemo && (
                     <span

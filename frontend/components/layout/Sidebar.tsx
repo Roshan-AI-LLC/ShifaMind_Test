@@ -95,7 +95,7 @@ export function Sidebar({ isAdmin = false, mobileOpen = false, onMobileClose }: 
 
       {/* Nav */}
       <nav className="flex-1 py-4 space-y-0.5 px-2 overflow-y-auto">
-        {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
+        {NAV_ITEMS.map(({ href, icon: Icon, label }, i) => {
           const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
           return (
             <Link
@@ -104,12 +104,14 @@ export function Sidebar({ isAdmin = false, mobileOpen = false, onMobileClose }: 
               onClick={onMobileClose}
               title={!showLabels ? label : undefined}
               className={cn(
+                'animate-fade-in',
                 'flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-150',
                 'border-l-2',
                 active
                   ? 'bg-white/[0.08] border-l-[#4ecdc4] text-[var(--accent)]'
                   : 'border-l-transparent text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
               )}
+              style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'backwards' }}
             >
               <Icon className="w-5 h-5 shrink-0" />
               {showLabels && <span className="text-sm font-medium truncate">{label}</span>}

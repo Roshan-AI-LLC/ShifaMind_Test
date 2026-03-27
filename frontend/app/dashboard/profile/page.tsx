@@ -100,23 +100,23 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 animate-fade-in">
+    <div className="max-w-2xl mx-auto px-2 sm:px-0 space-y-5 animate-fade-in">
       <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Profile</h1>
 
       {/* Avatar + name */}
       <GlassCard className="p-6">
-        <div className="flex items-center gap-5">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0"
             style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)', color: 'var(--accent)' }}
           >
             {initials}
           </div>
-          <div>
+          <div className="text-center sm:text-left">
             <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
               {profile?.full_name}
             </h2>
-            <div className="flex items-center gap-3 mt-1">
+            <div className="flex items-center justify-center sm:justify-start gap-3 mt-1">
               {profile?.role === 'admin' && (
                 <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,107,107,0.15)', color: 'var(--accent-warm)' }}>
                   Admin

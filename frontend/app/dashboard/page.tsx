@@ -53,7 +53,7 @@ export default async function DashboardPage() {
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+        <h1 className="text-xl sm:text-2xl font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
           Welcome back{lastName ? `, Dr. ${lastName}` : ''}
         </h1>
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -103,8 +103,13 @@ export default async function DashboardPage() {
           Quick actions
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {QUICK_ACTIONS.map(({ href, icon: Icon, label, description, color }) => (
-            <Link key={href} href={href}>
+          {QUICK_ACTIONS.map(({ href, icon: Icon, label, description, color }, i) => (
+            <Link
+              key={href}
+              href={href}
+              className="animate-fade-in"
+              style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'backwards' }}
+            >
               <GlassCard hover className="p-6 h-full">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
@@ -123,6 +128,27 @@ export default async function DashboardPage() {
           ))}
         </div>
       </div>
+
+      {/* First-time welcome banner */}
+      {(predictionCount ?? 0) === 0 && (chatCount ?? 0) === 0 && (
+        <GlassCard className="p-6 border-l-2 border-l-[#4ecdc4]">
+          <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+            Welcome to ShifaMind Platform
+          </p>
+          <p className="text-xs mb-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            Start by analyzing a clinical note in the Workspace. ShifaMind will predict ICD-10 diagnoses
+            and show you exactly which clinical concepts drove each prediction.
+          </p>
+          <Link
+            href="/dashboard/workspace"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all
+              hover:brightness-110 hover:shadow-[0_0_20px_rgba(78,205,196,0.3)] active:scale-[0.98]"
+            style={{ background: '#4ecdc4', color: '#060a13' }}
+          >
+            Open Workspace →
+          </Link>
+        </GlassCard>
+      )}
 
       {/* System status */}
       <GlassCard className="p-6">

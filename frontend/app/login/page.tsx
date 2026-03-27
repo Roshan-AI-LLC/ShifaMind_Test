@@ -116,7 +116,7 @@ function LoginForm() {
           </p>
         </div>
 
-        <GlassCard className="p-8">
+        <GlassCard className="p-6 sm:p-8">
           {magicSent ? (
             <div className="text-center py-4">
               <Mail className="w-10 h-10 mx-auto mb-4" style={{ color: 'var(--accent)' }} />

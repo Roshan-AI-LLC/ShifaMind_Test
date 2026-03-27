@@ -245,7 +245,8 @@ export default function AdminPage() {
               No reviews submitted yet
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="overflow-x-auto -mx-2 sm:mx-0">
+            <div className="min-w-[600px] px-2 sm:px-0 space-y-2">
               {reviews.reviews.map(r => (
                 <div key={r.id}
                   className="flex items-start gap-4 px-4 py-3 rounded-xl"
@@ -282,6 +283,7 @@ export default function AdminPage() {
                   </div>
                 </div>
               ))}
+            </div>
             </div>
           )}
         </GlassCard>

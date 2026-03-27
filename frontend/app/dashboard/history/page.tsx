@@ -85,7 +85,7 @@ function PredictionCard({ prediction }: { prediction: PredictionRow }) {
         </div>
 
         {/* Actions + expand */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Link
             href={`/dashboard/chat?prediction_id=${prediction.id}`}
             onClick={e => e.stopPropagation()}
@@ -206,7 +206,7 @@ export default function HistoryPage() {
   }, [])
 
   return (
-    <div className="max-w-3xl mx-auto animate-fade-in">
+    <div className="max-w-3xl mx-auto px-2 sm:px-0 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>History</h1>
@@ -225,7 +225,15 @@ export default function HistoryPage() {
       {!loading && predictions.length === 0 && <EmptyHistory />}
       {!loading && predictions.length > 0 && (
         <div className="space-y-3">
-          {predictions.map(p => <PredictionCard key={p.id} prediction={p} />)}
+          {predictions.map((p, i) => (
+            <div
+              key={p.id}
+              className="animate-fade-in"
+              style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'backwards' }}
+            >
+              <PredictionCard prediction={p} />
+            </div>
+          ))}
           {hasMore && (
             <p className="text-center text-xs py-2" style={{ color: 'var(--text-muted)' }}>
               Showing latest {PAGE} predictions

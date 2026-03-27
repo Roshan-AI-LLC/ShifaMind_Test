@@ -104,7 +104,7 @@ export function PredictionPanel({
             </div>
 
             {/* Confidence bar */}
-            <div className="w-32 shrink-0">
+            <div className="w-20 sm:w-32 shrink-0">
               <ConfidenceBar value={pred.confidence} />
               <p className="text-xs mt-1 text-right font-mono" style={{ color: 'var(--text-muted)' }}>
                 thr: {(pred.threshold * 100).toFixed(0)}%
