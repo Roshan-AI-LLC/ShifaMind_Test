@@ -1,4 +1,7 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+
+export const metadata: Metadata = { title: 'Dashboard' }
 import { GlassCard } from '@/components/shared/GlassCard'
 import { FlaskConical, MessageSquare, History, TrendingUp, Brain } from 'lucide-react'
 import Link from 'next/link'

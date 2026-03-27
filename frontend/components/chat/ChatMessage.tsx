@@ -27,7 +27,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user'
 
   return (
-    <div className={cn('flex items-end gap-2', isUser ? 'justify-end' : 'justify-start')}>
+    <div className={cn(
+      'flex items-end gap-2',
+      isUser ? 'justify-end animate-slide-right' : 'justify-start animate-slide-left'
+    )}>
       {/* Assistant avatar */}
       {!isUser && (
         <div

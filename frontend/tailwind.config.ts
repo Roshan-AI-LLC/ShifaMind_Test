@@ -76,8 +76,16 @@ const config: Config = {
           to: { height: '0' },
         },
         'fade-in': {
-          from: { opacity: '0', transform: 'translateY(8px)' },
+          from: { opacity: '0', transform: 'translateY(4px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'slide-right': {
+          from: { opacity: '0', transform: 'translateX(12px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        'slide-left': {
+          from: { opacity: '0', transform: 'translateX(-12px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
         },
         'pulse-dot': {
           '0%, 80%, 100%': { transform: 'scale(0)' },
@@ -91,7 +99,9 @@ const config: Config = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-in': 'fade-in 0.3s ease-out',
+        'fade-in': 'fade-in 0.2s ease-out',
+        'slide-right': 'slide-right 0.2s ease-out',
+        'slide-left': 'slide-left 0.2s ease-out',
         'pulse-dot': 'pulse-dot 1.4s ease-in-out infinite',
         shimmer: 'shimmer 2s linear infinite',
       },

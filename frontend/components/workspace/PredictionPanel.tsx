@@ -53,10 +53,11 @@ export function PredictionPanel({
         </p>
       </div>
 
-      {displayed.map(pred => (
+      {displayed.map((pred, i) => (
         <div
           key={pred.code}
           className={cn(
+            'animate-fade-in',
             'rounded-xl border transition-all duration-150 overflow-hidden',
             pred.above_threshold
               ? pred.rank === 1
@@ -64,10 +65,14 @@ export function PredictionPanel({
                 : 'border-[var(--glass-border)] bg-white/[0.03]'
               : 'border-white/[0.04] bg-transparent opacity-50'
           )}
-          style={pred.rank === 1 && pred.above_threshold ? {
-            borderLeft: '2px solid #4ecdc4',
-            boxShadow: '0 0 20px rgba(78,205,196,0.06), inset 3px 0 12px rgba(78,205,196,0.08)',
-          } : undefined}
+          style={{
+            animationDelay: `${i * 50}ms`,
+            animationFillMode: 'backwards',
+            ...(pred.rank === 1 && pred.above_threshold ? {
+              borderLeft: '2px solid #4ecdc4',
+              boxShadow: '0 0 20px rgba(78,205,196,0.06), inset 3px 0 12px rgba(78,205,196,0.08)',
+            } : {}),
+          }}
         >
           {/* Row */}
           <button

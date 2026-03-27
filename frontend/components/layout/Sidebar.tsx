@@ -110,7 +110,7 @@ export function Sidebar({ isAdmin = false, mobileOpen = false, onMobileClose }: 
                 'border-l-2',
                 active
                   ? 'bg-white/[0.08] border-l-[#4ecdc4] text-[var(--accent)]'
-                  : 'border-l-transparent text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
+                  : 'border-l-transparent text-[var(--text-secondary)] hover:bg-white/[0.06] hover:text-[var(--text-primary)] hover:brightness-125'
               )}
               style={{
                 animationDelay: `${i * 40}ms`,
@@ -141,7 +141,7 @@ export function Sidebar({ isAdmin = false, mobileOpen = false, onMobileClose }: 
                     'border-l-2',
                     active
                       ? 'bg-white/[0.08] border-l-[#4ecdc4] text-[var(--accent)]'
-                      : 'border-l-transparent text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
+                      : 'border-l-transparent text-[var(--text-secondary)] hover:bg-white/[0.06] hover:text-[var(--text-primary)] hover:brightness-125'
                   )}
                 >
                   <Icon className="w-5 h-5 shrink-0" />

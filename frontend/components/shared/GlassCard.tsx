@@ -17,8 +17,9 @@ export function GlassCard({ children, className, hover }: GlassCardProps) {
           'cursor-pointer',
           'hover:bg-white/[0.07]',
           'hover:border-white/[0.12]',
-          'hover:shadow-xl hover:shadow-black/25',
-          'hover:-translate-y-0.5',
+          'hover:shadow-xl hover:shadow-black/30',
+          'hover:-translate-y-1',
+          'active:scale-[0.97]',
         ],
         className
       )}
