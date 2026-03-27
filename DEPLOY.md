@@ -177,13 +177,21 @@ You should see the login page. It will look correct but login won't work yet —
 
 ## 5. Seed the Database
 
-Open a new terminal from the repo root.
+Open a new terminal from the **repo root** (not inside `frontend/`).
 
-### 5a. Install seed dependencies
+### 5a. Create a virtual environment and install seed dependencies
 
 ```bash
+# Make sure you're in the repo root, not frontend/
+cd shifamind_test   # skip if already there
+
+python3 -m venv .venv
+source .venv/bin/activate   # on Windows: .venv\Scripts\activate
+
 pip install supabase python-dotenv
 ```
+
+> Always use a venv — never `pip install` globally on a Mac/Linux machine. Your `.venv/` folder is already in `.gitignore`.
 
 ### 5b. Seed doctor accounts
 
@@ -272,11 +280,14 @@ Once done, visit `https://platform.shifamind.me` — the login page should load.
 
 ## 7. Backend — Local Dev
 
-### 7a. Install Python dependencies
+### 7a. Create a virtual environment and install Python dependencies
 
 ```bash
-cd backend
-pip install -r requirements.txt
+# From the repo root
+python3 -m venv .venv          # skip if you already made it in step 5
+source .venv/bin/activate      # on Windows: .venv\Scripts\activate
+
+pip install -r backend/requirements.txt
 ```
 
 > This installs FastAPI, PyTorch, Transformers, boto3, Supabase client, and httpx.
@@ -325,6 +336,7 @@ If you **don't** have the weights yet, the API still starts — `model_loaded: f
 ### 7d. Start the API
 
 ```bash
+# From the repo root, with venv active
 cd backend
 uvicorn app.main:app --reload --port 8000
 ```
