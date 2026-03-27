@@ -269,7 +269,7 @@ function LoginForm() {
             Demo credentials
           </p>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            doctor@shifamind.demo · password123
+            o.shaikh@shifamind.dev · ShifaMind2025!
           </p>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
             Works offline — demo mode with mock predictions

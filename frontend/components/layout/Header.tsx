@@ -37,20 +37,26 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
     : 'DR'
 
   return (
-    <header className="sticky top-0 w-full h-16 z-20 flex items-center justify-between px-6
-      glass border-b border-white/[0.06] transition-all duration-300">
+    <header
+      className="sticky top-0 z-30 h-16 flex items-center justify-between px-4 sm:px-6 border-b border-white/[0.06]"
+      style={{
+        background: 'rgba(6, 10, 19, 0.75)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+      }}
+    >
       {/* Left: hamburger (mobile only) + breadcrumb */}
       <div className="flex items-center gap-3">
         <button
           onClick={onMobileMenuToggle}
-          className="lg:hidden w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white/[0.06] transition-colors"
+          className="lg:hidden w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/[0.06] transition-colors"
           aria-label="Toggle menu"
         >
-          <Menu className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+          <Menu className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
         </button>
         <div className="flex items-center gap-2">
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>ShifaMind</span>
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>/</span>
+          <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-muted)' }}>ShifaMind</span>
+          <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-muted)' }}>/</span>
           <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{label}</span>
         </div>
       </div>
@@ -69,7 +75,7 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
             {initials}
           </div>
           {doctor && (
-            <span className="text-sm hidden sm:block" style={{ color: 'var(--text-secondary)' }}>
+            <span className="text-sm hidden md:block" style={{ color: 'var(--text-secondary)' }}>
               {doctor.full_name}
             </span>
           )}

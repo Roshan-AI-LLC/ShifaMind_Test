@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { GlassCard } from '@/components/shared/GlassCard'
-import { FlaskConical, MessageSquare, History, TrendingUp } from 'lucide-react'
+import { FlaskConical, MessageSquare, History, TrendingUp, Brain } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -13,7 +13,6 @@ export default async function DashboardPage() {
     .eq('id', user!.id)
     .single()
 
-  // Stats
   const { count: predictionCount } = await supabase
     .from('predictions')
     .select('*', { count: 'exact', head: true })
@@ -23,6 +22,8 @@ export default async function DashboardPage() {
     .from('chat_sessions')
     .select('*', { count: 'exact', head: true })
     .eq('doctor_id', user!.id)
+
+  const lastName = doctor?.full_name?.split(' ').pop()
 
   const QUICK_ACTIONS = [
     {
@@ -52,22 +53,20 @@ export default async function DashboardPage() {
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>
-          Welcome back{doctor?.full_name ? `, ${doctor.full_name.split(' ')[0]}` : ''}
+        <h1 className="text-2xl font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+          Welcome back{lastName ? `, Dr. ${lastName}` : ''}
         </h1>
-        {doctor?.specialty && (
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            {doctor.specialty}
-          </p>
-        )}
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          ShifaMind Platform — Interpretable Clinical Decision Support
+        </p>
       </div>
 
-      {/* Stats row */}
+      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <GlassCard className="p-5">
+        <GlassCard className="p-6">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: 'var(--accent-dim)' }}
             >
               <TrendingUp className="w-5 h-5" style={{ color: 'var(--accent)' }} />
@@ -76,14 +75,14 @@ export default async function DashboardPage() {
               <p className="text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {predictionCount ?? 0}
               </p>
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Predictions</p>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Predictions run</p>
             </div>
           </div>
         </GlassCard>
-        <GlassCard className="p-5">
+        <GlassCard className="p-6">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: 'rgba(167,139,250,0.15)' }}
             >
               <MessageSquare className="w-5 h-5" style={{ color: '#a78bfa' }} />
@@ -100,13 +99,13 @@ export default async function DashboardPage() {
 
       {/* Quick actions */}
       <div>
-        <h2 className="text-sm font-medium mb-3" style={{ color: 'var(--text-secondary)' }}>
+        <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>
           Quick actions
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {QUICK_ACTIONS.map(({ href, icon: Icon, label, description, color }) => (
             <Link key={href} href={href}>
-              <GlassCard hover className="p-5 h-full">
+              <GlassCard hover className="p-6 h-full">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
                   style={{ background: `${color}20` }}
@@ -124,6 +123,32 @@ export default async function DashboardPage() {
           ))}
         </div>
       </div>
+
+      {/* System status */}
+      <GlassCard className="p-6">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'var(--accent-dim)' }}
+            >
+              <Brain className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+            </div>
+            <div>
+              <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--text-secondary)' }}>
+                System Status
+              </p>
+              <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                Phase 1 · BioClinicalBERT · 111 Concepts · 50 ICD-10 Codes
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--accent)' }} />
+            <span className="text-xs" style={{ color: 'var(--accent)' }}>Ready</span>
+          </div>
+        </div>
+      </GlassCard>
     </div>
   )
 }

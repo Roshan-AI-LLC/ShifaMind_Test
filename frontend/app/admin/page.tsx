@@ -52,7 +52,7 @@ function StatTile({ icon: Icon, label, value, color }: {
   icon: React.ElementType; label: string; value: string | number; color: string
 }) {
   return (
-    <GlassCard className="p-5">
+    <GlassCard className="p-6">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: `${color}20` }}>
@@ -156,7 +156,7 @@ export default function AdminPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Avg rating */}
           {stats && (
-            <GlassCard className="p-5">
+            <GlassCard className="p-6">
               <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>
                 Average rating
               </h3>
@@ -180,7 +180,7 @@ export default function AdminPage() {
 
           {/* Top ICD-10 codes */}
           {stats && stats.top_icd10_codes.length > 0 && (
-            <GlassCard className="p-5">
+            <GlassCard className="p-6">
               <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>
                 Top predicted codes
               </h3>
@@ -206,7 +206,7 @@ export default function AdminPage() {
         </div>
 
         {/* Reviews table */}
-        <GlassCard className="p-5">
+        <GlassCard className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
               All reviews {reviews && <span style={{ color: 'var(--text-muted)' }}>({reviews.total})</span>}

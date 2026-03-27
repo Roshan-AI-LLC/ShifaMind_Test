@@ -10,6 +10,7 @@ import { ConceptPanel } from '@/components/workspace/ConceptPanel'
 import { ConceptDiagnosisMap } from '@/components/workspace/ConceptDiagnosisMap'
 import { FeedbackWidget } from '@/components/workspace/FeedbackWidget'
 import { usePrediction } from '@/hooks/usePrediction'
+import { cn } from '@/lib/utils'
 import type { PredictResponse } from '@/types'
 
 type ResultTab = 'diagnoses' | 'concepts' | 'attribution'
@@ -66,10 +67,10 @@ export default function WorkspacePage() {
           {!result && !loading && !error && (
             <GlassCard className="h-full flex flex-col items-center justify-center p-12 text-center">
               <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                style={{ background: 'var(--accent-dim)' }}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 animate-pulse"
+                style={{ background: 'var(--accent-dim)', boxShadow: '0 0 24px rgba(78,205,196,0.2)' }}
               >
-                <Zap className="w-8 h-8" style={{ color: 'var(--accent)' }} />
+                <Zap className="w-7 h-7" style={{ color: 'var(--accent)' }} />
               </div>
               <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
                 Ready to analyze
@@ -159,18 +160,19 @@ export default function WorkspacePage() {
 
               {/* Tabs */}
               <div
-                className="flex gap-1 mb-4 p-1 rounded-xl shrink-0 overflow-x-auto"
-                style={{ background: 'var(--glass-bg)' }}
+                className="flex gap-1 p-1 rounded-xl mb-4 shrink-0 overflow-x-auto"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
               >
                 {TABS.map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className="flex-1 py-1.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap"
-                    style={{
-                      background: activeTab === tab.id ? 'rgba(255,255,255,0.07)' : 'transparent',
-                      color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    }}
+                    className={cn(
+                      'flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all duration-200 whitespace-nowrap',
+                      activeTab === tab.id
+                        ? 'bg-white/[0.1] text-white shadow-sm'
+                        : 'text-white/40 hover:text-white/60 hover:bg-white/[0.04]'
+                    )}
                   >
                     {tab.label}
                   </button>
