@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── ShifaMind Design Tokens ── */
+    --bg-deep: #060a13;
+    --bg-mid: #0b1120;
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-hover: rgba(255, 255, 255, 0.07);
+    --accent: #4ecdc4;
+    --accent-dim: rgba(78, 205, 196, 0.15);
+    --accent-glow: rgba(78, 205, 196, 0.3);
+    --accent-warm: #ff6b6b;
+    --accent-gold: #ffd93d;
+    --text-primary: rgba(255, 255, 255, 0.92);
+    --text-secondary: rgba(255, 255, 255, 0.55);
+    --text-muted: rgba(255, 255, 255, 0.3);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --font-main: 'Outfit', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --confidence-high: #4ecdc4;
+    --confidence-medium: #ffd93d;
+    --confidence-low: rgba(255, 255, 255, 0.3);
+
+    /* ── shadcn/ui tokens (dark-first) ── */
+    --background: 220 30% 5%;
+    --foreground: 0 0% 92%;
+    --card: 220 30% 7%;
+    --card-foreground: 0 0% 92%;
+    --popover: 220 30% 7%;
+    --popover-foreground: 0 0% 92%;
+    --primary: 177 52% 55%;
+    --primary-foreground: 220 30% 5%;
+    --secondary: 220 20% 15%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 220 20% 15%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 177 52% 55%;
+    --accent-foreground: 220 30% 5%;
+    --destructive: 0 63% 72%;
+    --destructive-foreground: 0 0% 92%;
+    --border: 220 20% 14%;
+    --input: 220 20% 14%;
+    --ring: 177 52% 55%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+@layer components {
+  /* ── Glass primitives ── */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+  }
+
+  .glass-hover:hover {
+    background: var(--glass-hover);
+  }
+
+  /* ── Accent glow ── */
+  .accent-glow {
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  /* ── Shimmer skeleton ── */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.04) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+    border-radius: var(--radius-sm);
+  }
+}
+
+@layer utilities {
+  .text-primary-custom { color: var(--text-primary); }
+  .text-secondary-custom { color: var(--text-secondary); }
+  .text-muted-custom { color: var(--text-muted); }
+}

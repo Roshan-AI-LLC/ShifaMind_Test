@@ -1,0 +1,51 @@
+# ── Environment ──────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.env
+
+# ── Node / Next.js ───────────────────────────────────────────
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/.netlify/
+.npm
+npm-debug.log*
+yarn-error.log*
+
+# ── Python / FastAPI ─────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+pip-log.txt
+
+# ── ML model weights ─────────────────────────────────────────
+*.pt
+*.pth
+*.bin
+*.onnx
+model/phase1_best.pt
+model/optimal_thresholds.json
+
+# ── IDE ───────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Misc ──────────────────────────────────────────────────────
+*.log
+*.tmp
+coverage/
+.nyc_output/
