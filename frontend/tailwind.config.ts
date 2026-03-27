@@ -19,7 +19,7 @@ const config: Config = {
         // Design system tokens
         'bg-deep': '#060a13',
         'bg-mid': '#0b1120',
-        accent: '#4ecdc4',
+        'shifamind-accent': '#4ecdc4',
         'accent-warm': '#ff6b6b',
         'accent-gold': '#ffd93d',
         // shadcn/ui compatible tokens

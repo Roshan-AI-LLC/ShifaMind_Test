@@ -65,6 +65,18 @@ export async function healthCheck(): Promise<{ status: string; model_loaded: boo
   return res.json()
 }
 
+// ── Predictions (history) ─────────────────────────────────────────────────────
+
+export interface PredictionRow {
+  id: string
+  note_source: 'sample' | 'custom'
+  input_text: string
+  predicted_codes: import('@/types').PredictedCode[]
+  activated_concepts: import('@/types').ActivatedConcept[]
+  inference_time_ms: number
+  created_at: string
+}
+
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
 export interface ChatSession {

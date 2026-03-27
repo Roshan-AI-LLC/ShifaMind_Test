@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { ToastProvider } from '@/components/shared/Toast'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -18,7 +19,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="min-h-screen antialiased" style={{ background: 'var(--bg-deep)' }}>
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   )

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Star, X, Loader2, CheckCircle } from 'lucide-react'
 import { submitReview } from '@/lib/api'
+import { useToast } from '@/components/shared/Toast'
 import { cn } from '@/lib/utils'
 
 interface FeedbackWidgetProps {
@@ -56,6 +57,7 @@ export function FeedbackWidget({ predictionId, onClose }: FeedbackWidgetProps) {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -71,9 +73,12 @@ export function FeedbackWidget({ predictionId, onClose }: FeedbackWidgetProps) {
         comment: comment.trim() || undefined,
       })
       setSuccess(true)
+      toast('Review submitted — thank you!', 'success')
       setTimeout(onClose, 1800)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit review')
+      const msg = err instanceof Error ? err.message : 'Failed to submit review'
+      setError(msg)
+      toast(msg, 'error')
     } finally {
       setLoading(false)
     }

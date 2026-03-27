@@ -34,8 +34,9 @@ export function Header() {
 
   return (
     <header
-      className="fixed top-0 right-0 left-16 h-16 z-30 flex items-center justify-between px-6
-        glass border-b border-white/[0.06]"
+      className="fixed top-0 right-0 h-16 z-30 flex items-center justify-between px-6
+        glass border-b border-white/[0.06] transition-all duration-300"
+      style={{ left: '64px' }}
     >
       {/* Breadcrumb */}
       <div className="flex items-center gap-2">
