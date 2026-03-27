@@ -10,16 +10,26 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+def _service_role_headers(settings) -> dict:
+    """
+    Build headers that bypass RLS for both key formats:
+      - Old JWT keys (eyJ...): Authorization JWT carries role=service_role
+      - New sb_secret_ keys:   Supabase allows same value in both headers (backward compat)
+    Either way, PostgREST treats the request as service_role → RLS bypassed.
+    """
+    key = settings.SUPABASE_SERVICE_ROLE_KEY
+    return {
+        "apikey": key,
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+    }
+
+
 @router.get("/admin/stats", tags=["admin"])
 async def get_stats(admin: dict = Depends(get_admin_doctor)):
     """Platform-wide usage statistics (admin only)."""
     settings = get_settings()
-    token = admin.get("_token", "")
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,  # service role to bypass RLS
-        "Content-Type": "application/json",
-    }
+    headers = _service_role_headers(settings)
 
     async with httpx.AsyncClient() as client:
         pred_resp, chat_resp, review_resp, doctor_resp = await _gather(
@@ -81,11 +91,7 @@ async def list_all_reviews(
 ):
     """Paginated list of all reviews (admin only)."""
     settings = get_settings()
-    token = admin.get("_token", "")
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
-    }
+    headers = _service_role_headers(settings)
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(

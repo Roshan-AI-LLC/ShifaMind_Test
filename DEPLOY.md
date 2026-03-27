@@ -74,19 +74,52 @@ Leave `.env` open — you'll fill in values as you go through this guide.
 
 ### 3b. Grab your keys
 
-In your Supabase project: **Project Settings → API**
+Supabase rolled out a new API key format in mid-2025. Depending on when you created your project you'll see one of two layouts — both work fine.
 
-Copy these three values into your `.env` file:
+**Go to: Project Settings → API**
+
+---
+
+**New projects (created after July 2025) — new key format**
+
+| What you need | Where to find it | Looks like |
+|---------------|-----------------|------------|
+| Project URL | "Project URL" box | `https://xxxxxxxxxxxx.supabase.co` |
+| Publishable key | "API Keys" → **Publishable** | `sb_publishable_...` |
+| Secret key | "API Keys" → **Secret** (click "Reveal") | `sb_secret_...` |
+
+> The **Secret** key is hidden by default — click the eye icon to reveal it. Every reveal is logged in your org's audit log.
+
+---
+
+**Older projects — legacy key format (still fully supported)**
+
+| What you need | Where to find it | Looks like |
+|---------------|-----------------|------------|
+| Project URL | "Project URL" box | `https://xxxxxxxxxxxx.supabase.co` |
+| anon key | "Project API keys" → **anon / public** | `eyJhbGciOiJIUz...` (long JWT) |
+| service_role key | "Project API keys" → **service_role** | `eyJhbGciOiJIUz...` (long JWT) |
+
+---
+
+Copy the values into your `.env` file. Use whichever format your project shows:
 
 ```env
+# URL is always the same
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Publishable / anon key  (safe for frontend)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...   # new format
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...        # old format — either works
+SUPABASE_ANON_KEY=sb_publishable_...
+
+# Secret / service_role key  (backend only — never put in frontend)
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_...   # new format
+# SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...  # old format — either works
 ```
 
-> The `SERVICE_ROLE_KEY` is under **"service_role"** — it bypasses RLS. Keep it secret, never expose it in the frontend.
+> **Why two keys?** The publishable/anon key is safe to expose — it only has low-privilege read access via RLS. The secret/service_role key bypasses RLS entirely and must never be in your frontend code or committed to git.
 
 ### 3c. Run the database migration
 
@@ -218,8 +251,8 @@ Add each of these:
 
 | Key | Value |
 |-----|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | your Supabase URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your anon key |
+| `NEXT_PUBLIC_SUPABASE_URL` | your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your publishable key (`sb_publishable_...`) or anon key (`eyJ...`) |
 | `NEXT_PUBLIC_API_URL` | `https://api.shifamind.me` (or your EC2 URL for now) |
 
 ### 6d. Set custom domain
