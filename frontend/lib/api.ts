@@ -65,7 +65,27 @@ export async function healthCheck(): Promise<{ status: string; model_loaded: boo
   return res.json()
 }
 
-// ── SSE (used by Part 3 chat) ─────────────────────────────────────────────────
+// ── Chat ──────────────────────────────────────────────────────────────────────
+
+export interface ChatSession {
+  id: string
+  prediction_id: string | null
+  llm_provider: string
+  llm_model: string
+  created_at: string
+}
+
+export async function listChatSessions(): Promise<ChatSession[]> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('chat_sessions')
+    .select('id, prediction_id, llm_provider, llm_model, created_at')
+    .order('created_at', { ascending: false })
+    .limit(20)
+  return data ?? []
+}
+
+// ── SSE auth helper (used by useChat hook) ────────────────────────────────────
 
 export async function getAuthToken(): Promise<string> {
   const supabase = createClient()
