@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { User, Mail, Building2, Stethoscope, Key, Loader2, CheckCircle } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { GlassCard } from '@/components/shared/GlassCard'
 import { useToast } from '@/components/shared/Toast'
 
@@ -22,6 +21,16 @@ interface Stats {
   reviews: number
 }
 
+const MOCK_PROFILE: DoctorProfile = {
+  id: 'demo',
+  full_name: 'Dr. Omar Shaikh',
+  specialty: 'Internal Medicine',
+  institution: 'ShifaMind Demo',
+  email: 'o.shaikh@shifamind.dev',
+  role: 'doctor',
+  created_at: '2025-01-15T00:00:00Z',
+}
+
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="text-center p-4 rounded-xl" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
@@ -35,16 +44,18 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<DoctorProfile | null>(null)
   const [stats, setStats] = useState<Stats>({ predictions: 0, chats: 0, reviews: 0 })
   const [loading, setLoading] = useState(true)
+  const [isDemo, setIsDemo] = useState(false)
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [sendingLink, setSendingLink] = useState(false)
   const { toast } = useToast()
-  const supabase = createClient()
 
   useEffect(() => {
     async function load() {
       try {
+        const { createClient } = await import('@/lib/supabase/client')
+        const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
+        if (!user) throw new Error('No session')
 
         const [profileRes, predRes, chatRes, reviewRes] = await Promise.all([
           supabase.from('doctors').select('*').eq('id', user.id).single(),
@@ -53,14 +64,21 @@ export default function ProfilePage() {
           supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
         ])
 
-        if (profileRes.data) setProfile(profileRes.data as DoctorProfile)
+        if (profileRes.data) {
+          setProfile(profileRes.data as DoctorProfile)
+        } else {
+          setProfile(MOCK_PROFILE)
+          setIsDemo(true)
+        }
         setStats({
           predictions: predRes.count ?? 0,
           chats: chatRes.count ?? 0,
           reviews: reviewRes.count ?? 0,
         })
-      } catch (err) {
-        console.error('Failed to load profile:', err)
+      } catch {
+        // Supabase not configured or user not authenticated — show demo profile
+        setProfile(MOCK_PROFILE)
+        setIsDemo(true)
       } finally {
         setLoading(false)
       }
@@ -69,18 +87,25 @@ export default function ProfilePage() {
   }, [])
 
   async function handleMagicLink() {
-    if (!profile?.email) return
+    if (!profile?.email || isDemo) return
     setSendingLink(true)
-    const { error } = await supabase.auth.signInWithOtp({
-      email: profile.email,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-    })
-    setSendingLink(false)
-    if (error) {
-      toast(error.message, 'error')
-    } else {
-      setMagicLinkSent(true)
-      toast('Magic link sent to your email', 'success')
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOtp({
+        email: profile.email,
+        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      })
+      if (error) {
+        toast(error.message, 'error')
+      } else {
+        setMagicLinkSent(true)
+        toast('Magic link sent to your email', 'success')
+      }
+    } catch {
+      toast('Could not send magic link in demo mode', 'error')
+    } finally {
+      setSendingLink(false)
     }
   }
 
@@ -93,7 +118,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto space-y-4">
+      <div className="max-w-2xl mx-auto px-2 sm:px-0 space-y-4">
         {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-32 rounded-2xl" />)}
       </div>
     )
@@ -116,10 +141,15 @@ export default function ProfilePage() {
             <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
               {profile?.full_name}
             </h2>
-            <div className="flex items-center justify-center sm:justify-start gap-3 mt-1">
+            <div className="flex items-center justify-center sm:justify-start gap-3 mt-1 flex-wrap">
               {profile?.role === 'admin' && (
-                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,107,107,0.15)', color: 'var(--accent-warm)' }}>
+                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,107,107,0.15)', color: 'var(--accent-warm)', border: '1px solid rgba(255,107,107,0.2)' }}>
                   Admin
+                </span>
+              )}
+              {isDemo && (
+                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}>
+                  Demo
                 </span>
               )}
               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -162,34 +192,36 @@ export default function ProfilePage() {
       {/* Security */}
       <GlassCard className="p-6">
         <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>Security</h3>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <Key className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+            <Key className="w-4 h-4 shrink-0" style={{ color: 'var(--text-muted)' }} />
             <div>
               <p className="text-sm" style={{ color: 'var(--text-primary)' }}>Password-less sign in</p>
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                Send a magic link to your email to sign in without a password
+                {isDemo ? 'Not available in demo mode' : 'Send a magic link to your email to sign in without a password'}
               </p>
             </div>
           </div>
-          {magicLinkSent ? (
-            <div className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--accent)' }}>
-              <CheckCircle className="w-4 h-4" />
-              Sent
-            </div>
-          ) : (
-            <button
-              onClick={handleMagicLink}
-              disabled={sendingLink}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
-              style={{
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--glass-border)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              {sendingLink ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send magic link'}
-            </button>
+          {!isDemo && (
+            magicLinkSent ? (
+              <div className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--accent)' }}>
+                <CheckCircle className="w-4 h-4" />
+                Sent
+              </div>
+            ) : (
+              <button
+                onClick={handleMagicLink}
+                disabled={sendingLink}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
+                style={{
+                  background: 'var(--glass-bg)',
+                  border: '1px solid var(--glass-border)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                {sendingLink ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send magic link'}
+              </button>
+            )
           )}
         </div>
       </GlassCard>
