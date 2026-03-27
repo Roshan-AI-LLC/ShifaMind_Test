@@ -189,8 +189,8 @@ export default function HistoryPage() {
         const rows = data ?? []
         setHasMore(rows.length > PAGE)
         setPredictions(rows.slice(0, PAGE) as PredictionRow[])
+        setLoading(false)
       })
-      .finally(() => setLoading(false))
   }, [])
 
   return (

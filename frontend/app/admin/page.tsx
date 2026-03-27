@@ -93,7 +93,7 @@ export default function AdminPage() {
     fetchWithAuth('/api/admin/stats')
       .then(setStats)
       .catch(() => {})
-      .finally(() => setLoadingStats(false))
+      .then(() => setLoadingStats(false))
 
     healthCheck()
       .then(setApiHealth)
@@ -105,7 +105,7 @@ export default function AdminPage() {
     fetchWithAuth(`/api/admin/reviews?limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`)
       .then(setReviews)
       .catch(() => {})
-      .finally(() => setLoadingReviews(false))
+      .then(() => setLoadingReviews(false))
   }, [page])
 
   const totalPages = reviews ? Math.ceil(reviews.total / PAGE_SIZE) : 0

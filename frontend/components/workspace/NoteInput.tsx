@@ -35,7 +35,7 @@ export function NoteInput({ onSubmit, loading }: NoteInputProps) {
     listNotes()
       .then(setSampleNotes)
       .catch(() => {})
-      .finally(() => setLoadingNotes(false))
+      .then(() => setLoadingNotes(false))
   }, [])
 
   const filteredNotes = selectedCategory
