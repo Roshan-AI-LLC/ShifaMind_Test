@@ -118,7 +118,7 @@ export default function ProfilePage() {
             </h2>
             <div className="flex items-center gap-3 mt-1">
               {profile?.role === 'admin' && (
-                <span className="text-xs px-2 py-0.5 rounded-lg" style={{ background: 'rgba(255,107,107,0.15)', color: 'var(--accent-warm)' }}>
+                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,107,107,0.15)', color: 'var(--accent-warm)' }}>
                   Admin
                 </span>
               )}

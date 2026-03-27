@@ -82,7 +82,7 @@ function ChatContent() {
                 )}
                 {demoMode && (
                   <span
-                    className="text-xs px-2 py-0.5 rounded-lg"
+                    className="text-xs px-2 py-0.5 rounded-full"
                     style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}
                   >
                     Demo

@@ -55,7 +55,7 @@ export default function WorkspacePage() {
         {/* ── Left pane: Note input ── */}
         <div className="w-full lg:w-[420px] lg:shrink-0">
           <GlassCard className="p-6 h-full">
-            <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+            <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>
               Clinical Note
             </h2>
             <NoteInput onSubmit={handleSubmit} loading={loading} />
@@ -108,18 +108,18 @@ export default function WorkspacePage() {
               {/* Header */}
               <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  <h2 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
                     Prediction Results
                   </h2>
                   <span
-                    className="text-xs px-2 py-0.5 rounded-lg font-mono"
+                    className="text-xs px-2 py-0.5 rounded-full font-mono"
                     style={{ background: 'var(--glass-bg)', color: 'var(--text-muted)' }}
                   >
                     {result.metadata.inference_time_ms}ms
                   </span>
                   {demoMode && (
                     <span
-                      className="text-xs px-2 py-0.5 rounded-lg"
+                      className="text-xs px-2 py-0.5 rounded-full"
                       style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}
                     >
                       Demo

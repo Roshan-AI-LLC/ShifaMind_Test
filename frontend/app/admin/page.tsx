@@ -216,7 +216,7 @@ export default function AdminPage() {
                 <button
                   onClick={() => setPage(p => Math.max(0, p - 1))}
                   disabled={page === 0}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors disabled:opacity-30"
+                  className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors disabled:opacity-30"
                   style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
                 >
                   <ChevronLeft className="w-3.5 h-3.5" style={{ color: 'var(--text-secondary)' }} />
@@ -227,7 +227,7 @@ export default function AdminPage() {
                 <button
                   onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                   disabled={page >= totalPages - 1}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors disabled:opacity-30"
+                  className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors disabled:opacity-30"
                   style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
                 >
                   <ChevronRight className="w-3.5 h-3.5" style={{ color: 'var(--text-secondary)' }} />

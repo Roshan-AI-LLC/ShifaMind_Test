@@ -92,7 +92,7 @@ export function NoteInput({ onSubmit, loading }: NoteInputProps) {
                 type="button"
                 onClick={() => setSelectedCategory(null)}
                 className={cn(
-                  'px-2.5 py-1 rounded-lg text-xs transition-colors',
+                  'px-2.5 py-1 rounded-full text-xs transition-colors',
                   !selectedCategory ? 'bg-[var(--accent-dim)] text-[var(--accent)]' : 'text-white/40 hover:text-white/70'
                 )}
               >
@@ -104,7 +104,7 @@ export function NoteInput({ onSubmit, loading }: NoteInputProps) {
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
                   className={cn(
-                    'px-2.5 py-1 rounded-lg text-xs transition-colors',
+                    'px-2.5 py-1 rounded-full text-xs transition-colors',
                     selectedCategory === cat ? 'bg-[var(--accent-dim)] text-[var(--accent)]' : 'text-white/40 hover:text-white/70'
                   )}
                 >
@@ -198,7 +198,8 @@ export function NoteInput({ onSubmit, loading }: NoteInputProps) {
         type="submit"
         disabled={!text.trim() || loading}
         className="flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm
-          transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+          transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed
+          hover:brightness-110 hover:shadow-[0_0_20px_rgba(78,205,196,0.3)] active:scale-[0.98]"
         style={{
           background: '#4ecdc4',
           color: '#060a13',

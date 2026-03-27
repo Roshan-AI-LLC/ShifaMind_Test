@@ -51,14 +51,14 @@ function PredictionCard({ prediction }: { prediction: PredictionRow }) {
             {top.map(p => (
               <span
                 key={p.code}
-                className="font-mono text-xs px-2 py-0.5 rounded-lg"
+                className="font-mono text-xs px-2 py-0.5 rounded-full"
                 style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}
               >
                 {p.code}
               </span>
             ))}
             {codes.filter(p => p.above_threshold).length > 3 && (
-              <span className="text-xs px-2 py-0.5 rounded-lg" style={{ background: 'var(--glass-bg)', color: 'var(--text-muted)' }}>
+              <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--glass-bg)', color: 'var(--text-muted)' }}>
                 +{codes.filter(p => p.above_threshold).length - 3} more
               </span>
             )}
@@ -89,7 +89,7 @@ function PredictionCard({ prediction }: { prediction: PredictionRow }) {
           <Link
             href={`/dashboard/chat?prediction_id=${prediction.id}`}
             onClick={e => e.stopPropagation()}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs transition-colors"
             style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
@@ -149,14 +149,15 @@ function EmptyHistory() {
         style={{ background: 'rgba(255,217,61,0.1)' }}>
         <History className="w-7 h-7" style={{ color: 'var(--accent-gold)' }} />
       </div>
-      <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>No predictions yet</h3>
+      <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>No predictions yet</h3>
       <p className="text-sm mb-5" style={{ color: 'var(--text-secondary)' }}>
         Run your first analysis to see it here.
       </p>
       <Link
         href="/dashboard/workspace"
-        className="px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
-        style={{ background: '#4ecdc4', color: '#060a13' }}
+        className="px-5 py-2.5 rounded-xl text-sm font-medium transition-all
+          hover:brightness-110 hover:shadow-[0_0_20px_rgba(78,205,196,0.3)] active:scale-[0.98]"
+        style={{ background: '#4ecdc4', color: '#060a13', boxShadow: '0 4px 20px rgba(78,205,196,0.25)' }}
       >
         Go to Workspace →
       </Link>

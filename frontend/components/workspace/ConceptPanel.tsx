@@ -35,7 +35,7 @@ export function ConceptPanel({ concepts, onSelectConcept, selectedConcept }: Con
           <button
             type="button"
             onClick={() => setShowInactive(!showInactive)}
-            className="text-xs px-2.5 py-1 rounded-lg transition-colors"
+            className="text-xs px-2.5 py-1 rounded-xl transition-colors"
             style={{
               background: showInactive ? 'var(--accent-dim)' : 'var(--glass-bg)',
               color: showInactive ? 'var(--accent)' : 'var(--text-muted)',
@@ -46,7 +46,7 @@ export function ConceptPanel({ concepts, onSelectConcept, selectedConcept }: Con
           </button>
           {/* View toggle */}
           <div
-            className="flex rounded-lg overflow-hidden"
+            className="flex rounded-xl overflow-hidden"
             style={{ border: '1px solid var(--glass-border)' }}
           >
             {(['pills', 'bars'] as ViewMode[]).map(m => (
@@ -98,7 +98,7 @@ export function ConceptPanel({ concepts, onSelectConcept, selectedConcept }: Con
             <div
               key={c.concept}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer',
+                'flex items-center gap-3 px-3 py-2 rounded-xl transition-colors cursor-pointer',
                 selectedConcept === c.concept
                   ? 'bg-[var(--accent-dim)]'
                   : 'hover:bg-white/[0.03]'

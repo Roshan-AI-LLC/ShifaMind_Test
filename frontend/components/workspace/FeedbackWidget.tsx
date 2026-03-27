@@ -101,7 +101,7 @@ export function FeedbackWidget({ predictionId, onClose }: FeedbackWidgetProps) {
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/[0.06] transition-colors"
+            className="w-7 h-7 rounded-xl flex items-center justify-center hover:bg-white/[0.06] transition-colors"
           >
             <X className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
           </button>
@@ -164,7 +164,8 @@ export function FeedbackWidget({ predictionId, onClose }: FeedbackWidgetProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50
+                  hover:brightness-110 active:scale-[0.98]"
                 style={{ background: '#4ecdc4', color: '#060a13' }}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit review'}
