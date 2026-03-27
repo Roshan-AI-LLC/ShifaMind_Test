@@ -1,0 +1,266 @@
+ShifaMind Platform — Work Breakdown (4 Parts)
+================================================
+Repo: shifamind-platform
+URL: platform.shifamind.me (Netlify) | api.shifamind.me (AWS EC2/ECS)
+
+Each part is independently deployable and builds on the previous one.
+Total estimated files: ~80+ across frontend, backend, model, infra.
+
+================================================================================
+PART 1 — Foundation: Scaffold + Auth + Backend Skeleton
+================================================================================
+Goal: Running app with login, auth guards, and a live health-check API.
+Branch suggestion: feat/part1-foundation
+
+FRONTEND
+--------
+- [ ] Init Next.js 14 App Router project (TypeScript, Tailwind CSS)
+- [ ] Install & configure shadcn/ui
+- [ ] Set up global CSS design tokens (glassmorphism palette from spec)
+- [ ] Root layout (app/layout.tsx) — dark bg, Outfit + JetBrains Mono fonts
+- [ ] Shared components:
+      · GlassCard.tsx
+      · ConfidenceBar.tsx
+      · ConceptBadge.tsx
+- [ ] Layout components:
+      · Sidebar.tsx (collapsible, 64px → 240px)
+      · Header.tsx (glass, user avatar, breadcrumb)
+      · AuthGuard.tsx (redirect if not authenticated)
+- [ ] Supabase client setup:
+      · lib/supabase/client.ts (browser)
+      · lib/supabase/server.ts (server-side)
+      · lib/supabase/middleware.ts
+- [ ] Next.js middleware (middleware.ts) — protect /dashboard/* and /admin/*
+- [ ] Login page (app/login/page.tsx):
+      · Glass card, ShifaMind logo + "Platform" text
+      · Email + password fields
+      · Magic link toggle
+      · Error states
+      · Redirect to /dashboard on success
+      · Link back to shifamind.me
+- [ ] Root page (app/page.tsx) — redirect to /dashboard or /login
+- [ ] Dashboard layout (app/dashboard/layout.tsx) — shell with sidebar + header
+- [ ] Dashboard home stub (app/dashboard/page.tsx) — placeholder
+- [ ] hooks/useAuth.ts
+- [ ] netlify.toml (build config + /api/* proxy redirect)
+- [ ] next.config.js
+- [ ] tailwind.config.ts
+- [ ] .env.example (frontend vars)
+- [ ] package.json
+
+BACKEND
+-------
+- [ ] Init FastAPI project structure
+- [ ] backend/app/main.py — app entry, CORS, lifespan hook (placeholder model load)
+- [ ] backend/app/config.py — Pydantic Settings from env
+- [ ] backend/app/dependencies.py — get_current_doctor (JWT verify via Supabase)
+- [ ] backend/app/routers/health.py — GET /api/health
+- [ ] backend/app/schemas/models.py — base Pydantic schemas
+- [ ] backend/requirements.txt
+- [ ] backend/Dockerfile
+
+DATABASE
+--------
+- [ ] supabase/migrations/001_initial_schema.sql — full schema:
+      · doctors, sample_notes, predictions, chat_sessions,
+        chat_messages, reviews tables
+      · RLS policies for all tables
+
+SCRIPTS
+-------
+- [ ] scripts/seed_doctors.py — create 15 doctor accounts (2-3 admin)
+
+INFRA
+-----
+- [ ] .gitignore
+- [ ] .env.example (root, all vars)
+- [ ] README.md (setup instructions)
+
+DELIVERABLE: Login works, JWT auth guard active, /api/health returns 200,
+             Netlify deploy succeeds, Supabase schema applied.
+
+================================================================================
+PART 2 — ML Serving: Phase 1 Model + Predict Endpoint + Workspace UI
+================================================================================
+Goal: Doctors can input/select a note and get real ICD-10 predictions.
+Branch suggestion: feat/part2-ml-workspace
+
+MODEL
+-----
+- [ ] model/__init__.py
+- [ ] model/phase1_model.py — ShifaMind2Phase1 class (forward-only):
+      · BioClinicalBERT encoder (768-dim CLS)
+      · Concept head: Linear(768, 111)
+      · Concept embeddings: learnable (111, 768)
+      · Cross-attention at BERT layers [9, 11]
+      · Multiplicative gate: concept_scores * concept_features
+      · Diagnosis head: Linear(768, 50)
+- [ ] model/config.py — 111 concept names, 50 ICD-10 codes, threshold defaults
+- [ ] model/icd10_descriptions.json — code → description mapping
+
+BACKEND
+-------
+- [ ] backend/app/models/loader.py — load Phase 1 from S3 (or local path) at startup
+- [ ] backend/app/models/inference.py — tokenize → predict → apply thresholds
+- [ ] backend/app/routers/predict.py — POST /api/predict (auth required):
+      · Input: {text, apply_tuned_thresholds}
+      · Output: {predictions[], activated_concepts[], metadata}
+- [ ] backend/app/routers/notes.py:
+      · GET /api/notes — list sample notes
+      · GET /api/notes/{id} — single note
+- [ ] Update lifespan in main.py to load model on startup
+- [ ] lib/api.ts (frontend) — FastAPI fetch wrapper
+
+FRONTEND
+--------
+- [ ] lib/constants.ts — ICD-10 descriptions, concept names (111 concepts, 50 codes)
+- [ ] types/index.ts — TypeScript types (Prediction, Concept, SampleNote, etc.)
+- [ ] hooks/usePrediction.ts — prediction API hook
+- [ ] Workspace page (app/dashboard/workspace/page.tsx) — split-pane layout
+- [ ] Workspace components:
+      · NoteInput.tsx — textarea + sample dropdown (8-10 notes by specialty) + token count
+      · PredictionPanel.tsx — ranked ICD-10 cards with expand for concept attribution
+      · ConceptPanel.tsx — all 111 concepts, active ones as teal/amber pills + bars
+      · ConceptDiagnosisMap.tsx — interactive attribution (click to highlight)
+      · FeedbackWidget.tsx — star rating + comment modal (UI only, wired in Part 4)
+
+SCRIPTS
+-------
+- [ ] scripts/seed_notes.py — load 10 MIMIC-IV sample notes into Supabase:
+      1. Heart failure + pleural effusion (Cardiology)
+      2. Community-acquired pneumonia (Pulmonary)
+      3. Sepsis / septic shock (Infectious Disease)
+      4. Acute kidney injury (Renal)
+      5. Diabetic ketoacidosis (Endocrine)
+      6. Upper GI bleeding (GI)
+      7. Ischemic stroke (Neurology)
+      8. COPD exacerbation (Pulmonary)
+      9. Atrial fibrillation (Cardiology)
+      10. Complex multi-system case
+- [ ] scripts/upload_model_s3.py — upload weights + thresholds to S3
+
+DELIVERABLE: /api/predict returns real predictions. Workspace UI shows ranked
+             ICD-10 codes, activated concepts, and attribution view.
+
+================================================================================
+PART 3 — LLM & Chat: Streaming Conversation
+================================================================================
+Goal: Doctors can discuss predictions with a streaming AI assistant.
+Branch suggestion: feat/part3-chat
+
+BACKEND
+-------
+- [ ] backend/app/services/llm_provider.py — abstract base + factory:
+      · LLMProvider ABC with async stream_chat()
+      · get_llm_provider() factory (reads LLM_PROVIDER env var)
+- [ ] backend/app/services/openrouter.py — OpenRouterProvider:
+      · httpx, OpenAI-compatible endpoint
+      · Base URL: https://openrouter.ai/api/v1
+      · Model: meta-llama/llama-3.3-70b-instruct:free
+      · SSE token streaming
+- [ ] backend/app/services/bedrock.py — BedrockProvider:
+      · boto3 bedrock-runtime converse_stream
+      · Primary: meta.llama3-3-70b-instruct-v1:0
+      · Fallback: anthropic.claude-sonnet-4-20250514-v1:0
+- [ ] backend/app/prompts/medical.py — MEDICAL_SYSTEM_PROMPT template:
+      · Slots: {clinical_note}, {predictions_formatted}, {concepts_formatted}
+      · Role instructions: explain predictions, differential, evidence-based,
+        AI transparency disclaimer
+- [ ] backend/app/routers/chat.py — POST /api/chat (auth required):
+      · Input: {message, prediction_id, session_id, stream}
+      · StreamingResponse (text/event-stream)
+      · SSE format: data: {"type": "token", "content": "..."}\n\n
+                    data: {"type": "done", "session_id": "uuid"}\n\n
+      · Create/resume chat_session, persist chat_messages to Supabase
+
+FRONTEND
+--------
+- [ ] hooks/useChat.ts — SSE streaming hook:
+      · fetch() + ReadableStream
+      · Parse token/done events
+      · Append tokens to message in real time
+- [ ] Chat page (app/dashboard/chat/page.tsx) — main layout
+- [ ] Chat components:
+      · ChatPanel.tsx — scrollable message list + auto-scroll
+      · ChatMessage.tsx — user (teal glass, right) / assistant (neutral glass, left)
+      · ChatInput.tsx — input bar + send button + Enter key support
+      · ContextSidebar.tsx — collapsible right panel showing active diagnoses,
+                             top concepts, link back to workspace
+- [ ] Workspace bottom bar — "Discuss this case →" button linking to /dashboard/chat
+      with prediction_id passed as query param
+
+DELIVERABLE: Full streaming chat with LLM grounded in predictions.
+             OpenRouter works out of the box; Bedrock swappable via env var.
+
+================================================================================
+PART 4 — Data Layer + Admin + Polish
+================================================================================
+Goal: History, reviews, admin dashboard, and production-ready UX.
+Branch suggestion: feat/part4-data-admin
+
+BACKEND
+-------
+- [ ] backend/app/routers/reviews.py — POST /api/reviews (auth required):
+      · Save rating, accuracy_rating, interpretability_rating, comment, corrections
+- [ ] backend/app/routers/ admin endpoints:
+      · GET /api/admin/stats — total predictions, chats, avg ratings, active doctors
+      · GET /api/admin/reviews — paginated all reviews (admin role check)
+- [ ] Persist predictions to Supabase in /api/predict response
+- [ ] Persist chat sessions + messages in /api/chat
+
+FRONTEND
+--------
+- [ ] FeedbackWidget.tsx — wire up POST /api/reviews (previously UI-only)
+- [ ] History page (app/dashboard/history/page.tsx):
+      · List past predictions with date, note snippet, top code
+      · Click to expand: full results + replay chat
+      · Filter by date / specialty
+- [ ] Profile page (app/dashboard/profile/page.tsx):
+      · Doctor info (name, specialty, institution)
+      · Stats: total predictions, avg rating given, chats
+      · Change password / request magic link
+- [ ] Admin layout (app/admin/layout.tsx) — admin role guard
+- [ ] Admin page (app/admin/page.tsx):
+      · Usage stats: predictions/day chart, top ICD-10 codes, avg ratings
+      · All reviews table (paginated, filterable)
+      · Active doctor list
+
+POLISH (frontend-wide)
+----------------------
+- [ ] Loading skeletons — pulsing skeleton in results pane while predicting
+- [ ] Typing indicator — 3 pulsing dots in assistant bubble during stream
+- [ ] Toast notifications — success/error feedback (shadcn/ui toast)
+- [ ] Empty states — friendly messages for no history, no predictions yet
+- [ ] Error boundaries — graceful error handling per page
+- [ ] Keyboard shortcuts — Cmd+Enter to submit note, Escape to close modals
+- [ ] Responsive layout — sidebar collapses on tablet, stacks on mobile
+- [ ] Transition animations — fade-in for cards, slide-in for sidebar
+- [ ] Confidence color coding:
+      · High (≥0.7): --confidence-high (#4ecdc4)
+      · Medium (0.4–0.7): --confidence-medium (#ffd93d)
+      · Low (<0.4): --confidence-low (rgba(255,255,255,0.3))
+- [ ] Page titles + meta tags (Next.js Metadata API)
+
+INFRA
+-----
+- [ ] infra/Dockerfile.backend — production multi-stage build
+- [ ] infra/deploy.sh — EC2/ECS deploy script
+
+DELIVERABLE: Full production-ready platform. History, reviews, admin panel,
+             polished UX with animations and error handling.
+
+================================================================================
+SUMMARY TABLE
+================================================================================
+
+Part | Focus                          | Key Deliverable
+-----|--------------------------------|------------------------------------------
+  1  | Foundation: Scaffold + Auth    | Login works, health API live, DB schema up
+  2  | ML: Model + Predict + Workspace| Real ICD-10 predictions in the browser
+  3  | LLM: Streaming Chat            | Doctors chat with AI grounded in ML output
+  4  | Data + Admin + Polish          | History, reviews, admin dashboard, UX shine
+
+Each part can be developed by a separate engineer/agent in parallel after Part 1
+is complete. Parts 2, 3, and 4 all depend on the auth + DB foundation from Part 1.
+
+================================================================================
