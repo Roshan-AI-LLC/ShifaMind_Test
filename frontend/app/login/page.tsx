@@ -27,31 +27,36 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
 
-    if (mode === 'password') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        setError(
-          error.message === 'Invalid login credentials'
-            ? 'Invalid email or password. Please try again.'
-            : error.message
-        )
+    try {
+      if (mode === 'password') {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) {
+          setError(
+            error.message === 'Invalid login credentials'
+              ? 'Invalid email or password. Please try again.'
+              : error.message
+          )
+          setLoading(false)
+          return
+        }
+        router.push(redirectTo)
+      } else {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+          },
+        })
+        if (error) {
+          setError(error.message)
+          setLoading(false)
+          return
+        }
+        setMagicSent(true)
         setLoading(false)
-        return
       }
-      router.push(redirectTo)
-    } else {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        },
-      })
-      if (error) {
-        setError(error.message)
-        setLoading(false)
-        return
-      }
-      setMagicSent(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Connection error. Check your Supabase URL and key in .env.local.')
       setLoading(false)
     }
   }
