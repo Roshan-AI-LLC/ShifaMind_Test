@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
+import { isDemoMode } from '@/lib/demo-mode'
 
 interface AppShellProps {
   isAdmin?: boolean
@@ -11,6 +12,11 @@ interface AppShellProps {
 
 export function AppShell({ isAdmin = false, children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [showDemoBanner, setShowDemoBanner] = useState(false)
+
+  useEffect(() => {
+    isDemoMode().then(setShowDemoBanner)
+  }, [])
 
   return (
     <div className="min-h-screen relative" style={{ background: 'var(--bg-deep)' }}>
@@ -78,6 +84,22 @@ export function AppShell({ isAdmin = false, children }: AppShellProps) {
 
       {/* Content wrapper — shifts right of sidebar on desktop */}
       <div className="lg:ml-16 transition-all duration-300 relative z-[2]">
+        {showDemoBanner && (
+          <div
+            className="flex items-center justify-center gap-2 px-4 py-2 text-xs text-center"
+            style={{
+              background: 'rgba(255, 217, 61, 0.08)',
+              borderBottom: '1px solid rgba(255, 217, 61, 0.2)',
+              color: '#ffd93d',
+            }}
+          >
+            <span
+              className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ background: '#ffd93d' }}
+            />
+            Demo Mode — backend not connected. Showing mock BioClinicalBERT predictions.
+          </div>
+        )}
         <Header onMobileMenuToggle={() => setMobileOpen(v => !v)} />
         <main className="min-h-screen">
           <div className="p-4 sm:p-6">{children}</div>

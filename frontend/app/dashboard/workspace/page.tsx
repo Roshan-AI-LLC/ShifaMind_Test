@@ -26,7 +26,7 @@ function ResultSkeleton() {
 }
 
 export default function WorkspacePage() {
-  const { runPrediction, loading, error, result, demoMode } = usePrediction()
+  const { runPrediction, loading, error, result, isDemo } = usePrediction()
   const [activeTab, setActiveTab] = useState<ResultTab>('diagnoses')
   const [showFeedback, setShowFeedback] = useState(false)
   const [selectedCode, setSelectedCode] = useState<string | null>(null)
@@ -117,7 +117,7 @@ export default function WorkspacePage() {
                   >
                     {result.metadata.inference_time_ms}ms
                   </span>
-                  {demoMode && (
+                  {isDemo && (
                     <span
                       className="text-xs px-2 py-0.5 rounded-full"
                       style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}
@@ -127,7 +127,7 @@ export default function WorkspacePage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  {result.prediction_id && (
+                  {result.prediction_id && !isDemo && (
                     <button
                       onClick={() => setShowFeedback(true)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-colors"
@@ -141,9 +141,9 @@ export default function WorkspacePage() {
                       Rate
                     </button>
                   )}
-                  {result.prediction_id && (
+                  {(result.prediction_id || isDemo) && (
                     <Link
-                      href={`/dashboard/chat?prediction_id=${result.prediction_id}`}
+                      href={isDemo ? '/dashboard/chat?demo=true' : `/dashboard/chat?prediction_id=${result.prediction_id}`}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all"
                       style={{
                         background: 'var(--accent-dim)',

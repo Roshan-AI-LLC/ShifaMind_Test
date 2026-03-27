@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useRef, type Dispatch, type SetStateAction } from 'react'
 import { getAuthToken } from '@/lib/api'
-import { isDemoMode } from '@/lib/demo-mode'
-import { selectMockChatResponse } from '@/lib/mock-data'
+import { generateMockChatResponse } from '@/lib/mock-data'
+import type { PredictResponse } from '@/types'
 
 export interface ChatMessageLocal {
   id: string
@@ -14,6 +14,8 @@ export interface ChatMessageLocal {
 
 interface UseChatOptions {
   predictionId?: string | null
+  /** Optional prediction context used to generate context-aware mock responses. */
+  predictionContext?: PredictResponse | null
   initialSessionId?: string | null
 }
 
@@ -22,7 +24,7 @@ interface UseChatState {
   sessionId: string | null
   streaming: boolean
   error: string | null
-  demoMode: boolean
+  isDemo: boolean
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
@@ -30,17 +32,24 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 async function streamMockResponse(
   message: string,
   assistantId: string,
-  setState: Dispatch<SetStateAction<UseChatState>>
+  setState: Dispatch<SetStateAction<UseChatState>>,
+  context?: PredictResponse | null
 ) {
-  const fullText = selectMockChatResponse(message)
-  const tokens = fullText.split(/(?<=\s)|(?=\s)/)
+  const fullText = generateMockChatResponse(
+    message,
+    context?.predictions ?? [],
+    context?.activated_concepts ?? []
+  )
 
-  for (const token of tokens) {
-    await new Promise(r => setTimeout(r, 20))
+  // Word-by-word streaming with natural 30–70 ms cadence
+  const words = fullText.split(' ')
+  for (let i = 0; i < words.length; i++) {
+    await new Promise(r => setTimeout(r, 30 + Math.random() * 40))
+    const chunk = i === 0 ? words[i] : ' ' + words[i]
     setState(prev => ({
       ...prev,
       messages: prev.messages.map(m =>
-        m.id === assistantId ? { ...m, content: m.content + token } : m
+        m.id === assistantId ? { ...m, content: m.content + chunk } : m
       ),
     }))
   }
@@ -54,13 +63,13 @@ async function streamMockResponse(
   }))
 }
 
-export function useChat({ predictionId, initialSessionId }: UseChatOptions = {}) {
+export function useChat({ predictionId, predictionContext, initialSessionId }: UseChatOptions = {}) {
   const [state, setState] = useState<UseChatState>({
     messages: [],
     sessionId: initialSessionId ?? null,
     streaming: false,
     error: null,
-    demoMode: false,
+    isDemo: false,
   })
 
   const abortRef = useRef<AbortController | null>(null)
@@ -90,15 +99,6 @@ export function useChat({ predictionId, initialSessionId }: UseChatOptions = {})
       streaming: true,
       error: null,
     }))
-
-    // Check demo mode
-    const demo = await isDemoMode()
-
-    if (demo) {
-      setState(prev => ({ ...prev, demoMode: true }))
-      await streamMockResponse(content, assistantMsg.id, setState)
-      return
-    }
 
     try {
       const token = await getAuthToken()
@@ -172,15 +172,25 @@ export function useChat({ predictionId, initialSessionId }: UseChatOptions = {})
     } catch (err) {
       if ((err as Error).name === 'AbortError') return
 
-      // Fall back to mock streaming on network failure
-      setState(prev => ({ ...prev, demoMode: true }))
-      await streamMockResponse(content, assistantMsg.id, setState)
+      // Backend unreachable — fall back to mock streaming with prediction context
+      let ctx = predictionContext ?? null
+      if (!ctx) {
+        try {
+          const stored = sessionStorage.getItem('shifamind_demo_prediction')
+          if (stored) ctx = JSON.parse(stored) as PredictResponse
+        } catch {
+          // sessionStorage unavailable — proceed without context
+        }
+      }
+
+      setState(prev => ({ ...prev, isDemo: true }))
+      await streamMockResponse(content, assistantMsg.id, setState, ctx)
     }
-  }, [state.streaming, state.sessionId, predictionId])
+  }, [state.streaming, state.sessionId, predictionId, predictionContext])
 
   const reset = useCallback(() => {
     abortRef.current?.abort()
-    setState({ messages: [], sessionId: null, streaming: false, error: null, demoMode: false })
+    setState({ messages: [], sessionId: null, streaming: false, error: null, isDemo: false })
   }, [])
 
   return {
@@ -188,7 +198,7 @@ export function useChat({ predictionId, initialSessionId }: UseChatOptions = {})
     sessionId: state.sessionId,
     streaming: state.streaming,
     error: state.error,
-    demoMode: state.demoMode,
+    isDemo: state.isDemo,
     sendMessage,
     reset,
   }

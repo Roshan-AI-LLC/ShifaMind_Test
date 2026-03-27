@@ -20,15 +20,29 @@ export default function ChatPage() {
 
 function ChatContent() {
   const searchParams = useSearchParams()
-  const predictionId = searchParams.get('prediction_id')
+  const isDemo = searchParams.get('demo') === 'true'
+  const predictionId = isDemo ? null : searchParams.get('prediction_id')
 
   const [predictionContext, setPredictionContext] = useState<PredictResponse | null>(null)
   const [loadingContext, setLoadingContext] = useState(false)
 
-  const { messages, streaming, error, demoMode, sendMessage, reset } = useChat({ predictionId })
+  const { messages, streaming, error, isDemo: chatIsDemo, sendMessage, reset } = useChat({
+    predictionId,
+    predictionContext,
+  })
 
-  // Load prediction context from Supabase for the sidebar
+  // Load prediction context — from sessionStorage (demo) or Supabase (real)
   useEffect(() => {
+    if (isDemo) {
+      try {
+        const stored = sessionStorage.getItem('shifamind_demo_prediction')
+        if (stored) setPredictionContext(JSON.parse(stored) as PredictResponse)
+      } catch {
+        // sessionStorage unavailable — proceed without context
+      }
+      return
+    }
+
     if (!predictionId) return
     setLoadingContext(true)
     const supabase = createClient()
@@ -52,7 +66,9 @@ function ChatContent() {
         }
         setLoadingContext(false)
       })
-  }, [predictionId])
+  }, [isDemo, predictionId])
+
+  const showDemoTag = isDemo || chatIsDemo
 
   return (
     // -m-6 removes the layout's p-6, giving us edge-to-edge chat
@@ -70,7 +86,11 @@ function ChatContent() {
                 Clinical Assistant
               </h2>
               <div className="flex items-center gap-2">
-                {predictionId ? (
+                {isDemo ? (
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    Demo prediction context
+                  </p>
+                ) : predictionId ? (
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                     Grounded in prediction{' '}
                     <span className="font-mono">{predictionId.slice(0, 8)}…</span>
@@ -80,7 +100,7 @@ function ChatContent() {
                     General session — no prediction context
                   </p>
                 )}
-                {demoMode && (
+                {showDemoTag && (
                   <span
                     className="text-xs px-2 py-0.5 rounded-full"
                     style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}
@@ -136,7 +156,7 @@ function ChatContent() {
               onSend={sendMessage}
               disabled={streaming}
               placeholder={
-                predictionId
+                isDemo || predictionId
                   ? 'Ask about the predictions, differentials, workup…'
                   : 'Ask ShifaMind anything about clinical AI…'
               }

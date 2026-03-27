@@ -103,6 +103,11 @@ export const MOCK_SCENARIOS: Record<string, PredictResponse> = {
   },
 }
 
+// ── Convenience exports ───────────────────────────────────────────────────────
+
+/** All mock predictions as a flat array (for consumers that need a list). */
+export const MOCK_PREDICTIONS = Object.values(MOCK_SCENARIOS)
+
 // ── Keyword → scenario matching ───────────────────────────────────────────────
 
 const KEYWORDS: Array<{ pattern: RegExp; scenario: keyof typeof MOCK_SCENARIOS }> = [
@@ -119,6 +124,9 @@ export function selectMockResult(text: string): PredictResponse {
   }
   return MOCK_SCENARIOS.heart_failure
 }
+
+/** Alias used by components that want the named export. */
+export const findMockPrediction = selectMockResult
 
 // ── Mock sample notes ─────────────────────────────────────────────────────────
 
@@ -165,73 +173,142 @@ export const MOCK_NOTES: SampleNote[] = [
   },
 ]
 
-// ── Mock chat responses ────────────────────────────────────────────────────────
+/** Alias — preferred import name for note-selector components. */
+export const MOCK_SAMPLE_NOTES = MOCK_NOTES
 
-export const MOCK_CHAT_RESPONSES: Record<string, string> = {
-  default: `Based on the clinical note, the ShifaMind model identified several key activated concepts that contributed to these predictions.
+// ── Context-aware mock chat responses ─────────────────────────────────────────
 
-The top diagnosis reflects the constellation of clinical findings. The confidence scores indicate the model's certainty based on patterns learned from clinical documentation.
+type Prediction = PredictResponse['predictions'][number]
+type Concept = PredictResponse['activated_concepts'][number]
 
-**Key factors driving the top prediction:**
-- Multiple high-scoring activated concepts aligned with the diagnosis
-- Above-threshold confidence score indicating strong signal
-- Consistent clinical narrative
-
-**Suggested next steps:**
-1. Review the Concepts tab to understand which clinical findings were most influential
-2. Consider the Attribution map to see concept-to-diagnosis relationships
-3. Correlate with clinical judgment — AI predictions are decision support, not replacement
-
-*Note: This is a demo response. Connect the backend API for AI-powered clinical discussion.*`,
+function fmt(label: string) {
+  return label.replace(/_/g, ' ')
 }
 
+export function generateMockChatResponse(
+  userMessage: string,
+  predictions: Prediction[],
+  concepts: Concept[]
+): string {
+  const lmsg = userMessage.toLowerCase()
+  const topDx = predictions[0]
+  const secondDx = predictions[1]
+  const activeConcepts = concepts.filter(c => c.active).slice(0, 5)
+  const conceptList = activeConcepts
+    .map(c => `- **${fmt(c.concept)}** (score: ${c.score.toFixed(2)})`)
+    .join('\n')
+
+  // "Why was X predicted?" / "What was predicted?" / "Explain the prediction"
+  if (
+    lmsg.includes('why') ||
+    lmsg.includes('predicted') ||
+    lmsg.includes('explain') ||
+    lmsg.includes('reason')
+  ) {
+    if (topDx) {
+      return `**${topDx.description} (${topDx.code})** was the top prediction with a confidence of ${(topDx.confidence * 100).toFixed(0)}%, well above the tuned threshold of ${(topDx.threshold * 100).toFixed(0)}%.
+
+The BioClinicalBERT model extracted the following activated concepts as the primary drivers:
+${conceptList}
+
+The co-occurrence of these findings creates a high-confidence diagnostic signal. The model learned this concept cluster from de-identified clinical notes and associated it strongly with ${topDx.description}.${secondDx ? `\n\n**${secondDx.description} (${secondDx.code})** was ranked second at ${(secondDx.confidence * 100).toFixed(0)}% confidence, reflecting the clinical overlap common between these conditions. Reviewing the Attribution tab will show exactly which concepts link to each diagnosis.` : ''}
+
+*This is a ShifaMind demo response. Connect the backend API for live AI-powered clinical discussion.*`
+    }
+  }
+
+  // "What concepts were activated?" / "Key concepts" / "What features?"
+  if (
+    lmsg.includes('concept') ||
+    lmsg.includes('activated') ||
+    lmsg.includes('feature') ||
+    lmsg.includes('key')
+  ) {
+    return `The model activated **${activeConcepts.length} concepts** above threshold from the clinical note. Each score (0–1) reflects detection strength:
+
+${conceptList}
+
+Concepts with scores above **0.80** have the strongest influence on the top predictions. The Concepts tab shows all ${concepts.length} extracted features with their scores, and the Attribution tab maps each concept to the diagnoses it contributed to.
+
+High-scoring concepts like **${activeConcepts[0] ? fmt(activeConcepts[0].concept) : 'the top concept'}** are particularly important because they are specific to the leading diagnosis and rarely activated in other conditions.
+
+*This is a ShifaMind demo response. Connect the backend API for real-time analysis.*`
+  }
+
+  // "What workup?" / "Next steps?" / "Recommend?"
+  if (
+    lmsg.includes('workup') ||
+    lmsg.includes('recommend') ||
+    lmsg.includes('next step') ||
+    lmsg.includes('management') ||
+    lmsg.includes('treatment')
+  ) {
+    const dxLine = topDx
+      ? `Based on the top prediction of **${topDx.description} (${topDx.code})** at ${(topDx.confidence * 100).toFixed(0)}% confidence`
+      : 'Based on the predicted diagnoses'
+
+    return `${dxLine}, the following workup and management steps are worth considering:
+
+**Immediate assessment:**
+- Repeat focused history and physical exam to confirm clinical correlation
+- Vital signs trending and hemodynamic stability assessment
+- Relevant biomarkers and targeted labs based on the leading diagnosis
+
+**Confirmatory investigations:**
+- Imaging and diagnostic studies appropriate to the top-ranked ICD-10 codes
+- Subspecialty consultation where indicated${secondDx ? ` (consider ${secondDx.description} in the differential)` : ''}
+
+**Ongoing monitoring:**
+- Serial labs to track key parameters identified by the model
+- Clinical response to initial interventions
+- Reassessment if clinical trajectory diverges from the predicted diagnosis
+
+Remember that ShifaMind's predictions are clinical decision support — the final clinical judgment always rests with the treating physician.
+
+*This is a ShifaMind demo response. Connect the backend API for context-grounded clinical discussion.*`
+  }
+
+  // "What differentials?" / "Other diagnoses?" / "Differential diagnosis"
+  if (
+    lmsg.includes('differential') ||
+    lmsg.includes('other diagnos') ||
+    lmsg.includes('alternative')
+  ) {
+    const abovePreds = predictions.filter(p => p.above_threshold)
+    const belowPreds = predictions.filter(p => !p.above_threshold)
+    const aboveList = abovePreds.map(p => `- **${p.code}** ${p.description} — ${(p.confidence * 100).toFixed(0)}%`).join('\n')
+    const belowList = belowPreds.map(p => `- **${p.code}** ${p.description} — ${(p.confidence * 100).toFixed(0)}% *(below threshold)*`).join('\n')
+
+    return `The model returned ${predictions.length} ranked diagnoses for this clinical presentation.
+
+**Above-threshold predictions** (strong signal):
+${aboveList || '- None'}
+
+${belowList ? `**Below-threshold considerations** (weaker signal — worth keeping in mind):\n${belowList}\n\n` : ''}The threshold of ${topDx ? (topDx.threshold * 100).toFixed(0) : 50}% was tuned on validation data to optimize sensitivity-specificity balance. Below-threshold predictions should not be dismissed — they may represent early or atypical presentations.
+
+Consider each code in the context of the full clinical picture. The Concepts tab can help you understand which features are driving each prediction.
+
+*This is a ShifaMind demo response. Connect the backend API for AI-powered differential discussion.*`
+  }
+
+  // Default response — references top diagnosis and concepts
+  const topLine = topDx
+    ? `The analysis returned **${topDx.description} (${topDx.code})** as the top prediction at ${(topDx.confidence * 100).toFixed(0)}% confidence.`
+    : 'The analysis returned several predictions for this clinical note.'
+
+  return `${topLine} ${activeConcepts.length} concepts were activated above threshold, with the strongest signals from **${activeConcepts[0] ? fmt(activeConcepts[0].concept) : 'key clinical features'}** and **${activeConcepts[1] ? fmt(activeConcepts[1].concept) : 'supporting findings'}**.
+
+You can explore the predictions further:
+- **Diagnoses tab** — ranked ICD-10 codes with confidence scores
+- **Concepts tab** — all extracted clinical features with activation scores
+- **Attribution tab** — concept-to-diagnosis mapping showing which features drive each code
+
+Feel free to ask me to explain the top prediction, walk through the differentials, or suggest workup steps based on these findings.
+
+*This is a ShifaMind demo response. Connect the backend API for live AI-powered clinical discussion.*`
+}
+
+/** Legacy export — kept for backward compatibility. */
 export function selectMockChatResponse(message: string): string {
-  const lmsg = message.toLowerCase()
-  if (lmsg.includes('heart failure') || lmsg.includes('chf') || lmsg.includes('predicted')) {
-    return `Heart failure was predicted because the model detected a strong cluster of cardiac-specific concepts in the note.
-
-**Key activated concepts:**
-- **dyspnea** (0.94) — progressive exertional dyspnea is a cardinal symptom
-- **orthopnea** (0.86) — positional dyspnea indicates elevated filling pressures
-- **bilateral_edema** (0.89) — peripheral edema from venous congestion
-- **elevated_BNP** (0.82) — directly reflects myocardial stretch and wall stress
-- **reduced_EF** (0.78) — echocardiographic confirmation of systolic dysfunction
-
-The combination of these concepts creates a very high-confidence prediction for heart failure (0.91), well above the tuned threshold of 0.50.
-
-*Note: Demo response. Real analysis requires the backend API.*`
-  }
-
-  if (lmsg.includes('concept') || lmsg.includes('activated')) {
-    return `The activated concepts represent clinical features the model extracted from the note.
-
-Each concept has a score (0-1) indicating how strongly it was detected. Concepts with **active: true** exceeded the activation threshold and contributed positively to the top diagnoses.
-
-**High-scoring concepts** (>0.8) have the strongest influence on predictions. You can see the full concept-to-diagnosis mapping in the **Attribution** tab.
-
-*Note: Demo response. Real analysis requires the backend API.*`
-  }
-
-  if (lmsg.includes('workup') || lmsg.includes('recommend') || lmsg.includes('next')) {
-    return `Based on the predicted diagnoses, consider the following workup:
-
-**Immediate:**
-- Repeat vital signs and clinical assessment
-- Labs: CBC, CMP, relevant biomarkers (BNP, troponin, lactate as applicable)
-- ECG and chest X-ray if not already obtained
-
-**Confirmatory:**
-- Echocardiogram for cardiac diagnoses
-- CT or MRI depending on clinical context
-- Specialist consultation as appropriate
-
-**Monitoring:**
-- Fluid balance and daily weights
-- Serial labs to track trends
-- Response to initial interventions
-
-*This is AI-generated clinical decision support. Always apply clinical judgment. Demo response.*`
-  }
-
-  return MOCK_CHAT_RESPONSES.default
+  return generateMockChatResponse(message, [], [])
 }
