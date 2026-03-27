@@ -71,8 +71,9 @@ function ChatContent() {
   const showDemoTag = isDemo || chatIsDemo
 
   return (
-    // -m-6 removes the layout's p-6, giving us edge-to-edge chat
-    <div className="-m-6 flex flex-col" style={{ height: 'calc(100dvh - 112px)' }}>
+    // -m-4/-m-6 cancels the AppShell padding so chat goes edge-to-edge.
+    // flex-1 min-h-0 fills the bounded height the AppShell flex chain provides.
+    <div className="-m-4 sm:-m-6 flex flex-col flex-1 min-h-0">
       <div className="flex flex-1 overflow-hidden">
         {/* Main chat area */}
         <div className="flex-1 flex flex-col min-w-0">

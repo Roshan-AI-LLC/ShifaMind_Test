@@ -117,7 +117,7 @@ export function AppShell({ requireAdmin = false, children }: AppShellProps) {
       />
 
       {/* Content wrapper — shifts right of sidebar on desktop */}
-      <div className="lg:ml-16 transition-all duration-300 relative z-[2]">
+      <div className="lg:ml-16 transition-all duration-300 relative z-[2] flex flex-col" style={{ minHeight: '100dvh' }}>
         {showDemoBanner && (
           <div
             className="flex items-center justify-center gap-2 px-4 py-2 text-xs text-center"
@@ -135,8 +135,8 @@ export function AppShell({ requireAdmin = false, children }: AppShellProps) {
           </div>
         )}
         <Header onMobileMenuToggle={() => setMobileOpen(v => !v)} />
-        <main className="min-h-screen">
-          <div className="p-4 sm:p-6">{children}</div>
+        <main className="flex-1 flex flex-col min-h-0">
+          <div className="p-4 sm:p-6 flex-1 flex flex-col min-h-0">{children}</div>
         </main>
       </div>
     </div>
