@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Sidebar } from '@/components/layout/Sidebar'
-import { Header } from '@/components/layout/Header'
+import { AppShell } from '@/components/layout/AppShell'
 
 export default async function DashboardLayout({
   children,
@@ -15,7 +14,6 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  // Check admin role for admin routes
   const { data: doctor } = await supabase
     .from('doctors')
     .select('role')
@@ -25,15 +23,30 @@ export default async function DashboardLayout({
   const isAdmin = doctor?.role === 'admin'
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg-deep)' }}>
-      <Sidebar isAdmin={isAdmin} />
-      <Header />
-      {/* Main content — offset for sidebar (64px) + header (64px) */}
-      <main className="ml-16 pt-16 min-h-screen">
-        <div className="p-6">
-          {children}
-        </div>
-      </main>
+    <div className="min-h-screen relative" style={{ background: 'var(--bg-deep)' }}>
+      {/* Ambient orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div
+          className="absolute w-[500px] h-[500px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(78,205,196,0.12), transparent 70%)',
+            top: '-5%', left: '-5%',
+            filter: 'blur(80px)',
+            animation: 'float 25s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute w-[400px] h-[400px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(167,139,250,0.07), transparent 70%)',
+            bottom: '-10%', right: '-5%',
+            filter: 'blur(80px)',
+            animation: 'float 25s ease-in-out infinite',
+            animationDelay: '-8s',
+          }}
+        />
+      </div>
+      <AppShell isAdmin={isAdmin}>{children}</AppShell>
     </div>
   )
 }

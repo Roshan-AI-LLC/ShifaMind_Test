@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronDown, FlaskConical, Loader2, FileText } from 'lucide-react'
 import { listNotes } from '@/lib/api'
+import { MOCK_NOTES } from '@/lib/mock-data'
 import type { SampleNote } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -34,7 +35,7 @@ export function NoteInput({ onSubmit, loading }: NoteInputProps) {
     setLoadingNotes(true)
     listNotes()
       .then(setSampleNotes)
-      .catch(() => {})
+      .catch(() => setSampleNotes(MOCK_NOTES))
       .then(() => setLoadingNotes(false))
   }, [])
 

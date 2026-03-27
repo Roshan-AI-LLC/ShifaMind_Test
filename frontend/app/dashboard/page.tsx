@@ -63,7 +63,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <GlassCard className="p-5">
           <div className="flex items-center gap-3">
             <div

@@ -1,49 +1,64 @@
 'use client'
 
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
-import { GlassCard } from '@/components/shared/GlassCard'
 import { ChatPanel } from '@/components/chat/ChatPanel'
 import { ChatInput } from '@/components/chat/ChatInput'
 import { ContextSidebar } from '@/components/chat/ContextSidebar'
 import { useChat } from '@/hooks/useChat'
-import { predict } from '@/lib/api'
+import { createClient } from '@/lib/supabase/client'
 import type { PredictResponse } from '@/types'
 
 export default function ChatPage() {
+  return (
+    <Suspense>
+      <ChatContent />
+    </Suspense>
+  )
+}
+
+function ChatContent() {
   const searchParams = useSearchParams()
   const predictionId = searchParams.get('prediction_id')
 
   const [predictionContext, setPredictionContext] = useState<PredictResponse | null>(null)
   const [loadingContext, setLoadingContext] = useState(false)
 
-  const { messages, streaming, error, sendMessage, reset } = useChat({ predictionId })
+  const { messages, streaming, error, demoMode, sendMessage, reset } = useChat({ predictionId })
 
   // Load prediction context from Supabase for the sidebar
   useEffect(() => {
     if (!predictionId) return
     setLoadingContext(true)
-
-    // We fetch the prediction via the predict endpoint indirectly —
-    // the backend fetches it when building the system prompt.
-    // For the sidebar, we load it directly from the notes API as a best-effort.
-    // In a full implementation this would be a GET /api/predictions/{id} endpoint (Part 4).
-    // For now we surface the prediction_id as context cue.
-    setLoadingContext(false)
+    const supabase = createClient()
+    supabase
+      .from('predictions')
+      .select('*')
+      .eq('id', predictionId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setPredictionContext({
+            prediction_id: data.id,
+            predictions: data.predicted_codes ?? [],
+            activated_concepts: data.activated_concepts ?? [],
+            metadata: {
+              inference_time_ms: data.inference_time_ms ?? 0,
+              model_version: 'phase1_v1',
+              threshold_source: 'tuned',
+            },
+          })
+        }
+        setLoadingContext(false)
+      })
   }, [predictionId])
 
   return (
-    <div
-      className="fixed inset-0 flex flex-col"
-      style={{
-        top: '64px',     // header height
-        left: '64px',    // sidebar width
-        background: 'var(--bg-deep)',
-      }}
-    >
+    // -m-6 removes the layout's p-6, giving us edge-to-edge chat
+    <div className="-m-6 flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
       <div className="flex flex-1 overflow-hidden">
-        {/* ── Main chat area ── */}
+        {/* Main chat area */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top bar */}
           <div
@@ -54,22 +69,32 @@ export default function ChatPage() {
               <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                 Clinical Assistant
               </h2>
-              {predictionId ? (
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  Grounded in prediction{' '}
-                  <span className="font-mono">{predictionId.slice(0, 8)}…</span>
-                </p>
-              ) : (
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  General session — no prediction context
-                </p>
-              )}
+              <div className="flex items-center gap-2">
+                {predictionId ? (
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    Grounded in prediction{' '}
+                    <span className="font-mono">{predictionId.slice(0, 8)}…</span>
+                  </p>
+                ) : (
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    General session — no prediction context
+                  </p>
+                )}
+                {demoMode && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-lg"
+                    style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}
+                  >
+                    Demo
+                  </span>
+                )}
+              </div>
             </div>
 
             {messages.length > 0 && (
               <button
                 onClick={reset}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-colors"
                 style={{
                   background: 'var(--glass-bg)',
                   border: '1px solid var(--glass-border)',
@@ -85,7 +110,11 @@ export default function ChatPage() {
           </div>
 
           {/* Messages */}
-          <ChatPanel messages={messages} streaming={streaming} />
+          <ChatPanel
+            messages={messages}
+            streaming={streaming}
+            onSuggestionClick={sendMessage}
+          />
 
           {/* Error banner */}
           {error && (
@@ -118,12 +147,14 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* ── Context sidebar ── */}
-        <ContextSidebar
-          predictionId={predictionId}
-          prediction={predictionContext}
-          loadingPrediction={loadingContext}
-        />
+        {/* Context sidebar — hidden on mobile */}
+        <div className="hidden lg:block">
+          <ContextSidebar
+            predictionId={predictionId}
+            prediction={predictionContext}
+            loadingPrediction={loadingContext}
+          />
+        </div>
       </div>
     </div>
   )

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   LayoutDashboard,
   FlaskConical,
@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Brain,
   Shield,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -29,19 +30,38 @@ const ADMIN_ITEMS = [
 
 interface SidebarProps {
   isAdmin?: boolean
+  mobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
-export function Sidebar({ isAdmin = false }: SidebarProps) {
+export function Sidebar({ isAdmin = false, mobileOpen = false, onMobileClose }: SidebarProps) {
   const [expanded, setExpanded] = useState(false)
+  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pathname = usePathname()
+
+  function handleMouseEnter() {
+    if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current)
+    setExpanded(true)
+  }
+
+  function handleMouseLeave() {
+    collapseTimerRef.current = setTimeout(() => setExpanded(false), 300)
+  }
+
+  const showLabels = expanded || mobileOpen
 
   return (
     <aside
       className={cn(
         'fixed left-0 top-0 h-full z-40 flex flex-col',
         'glass border-r border-white/[0.06] transition-all duration-300',
-        expanded ? 'w-60' : 'w-16'
+        // Desktop width based on hover-expanded state
+        expanded ? 'lg:w-60' : 'lg:w-16',
+        // Mobile: slide in/out
+        mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0',
       )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-white/[0.06] shrink-0">
@@ -52,12 +72,21 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
           >
             <Brain className="w-4 h-4" style={{ color: 'var(--accent)' }} />
           </div>
-          {expanded && (
+          {showLabels && (
             <span className="font-semibold text-sm whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>
               ShifaMind
             </span>
           )}
         </div>
+        {/* Close button — mobile only */}
+        {mobileOpen && (
+          <button
+            onClick={onMobileClose}
+            className="ml-auto w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white/[0.06] transition-colors lg:hidden"
+          >
+            <X className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -68,24 +97,17 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
             <Link
               key={href}
               href={href}
+              onClick={onMobileClose}
+              title={!showLabels ? label : undefined}
               className={cn(
                 'flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150',
-                'group relative',
                 active
                   ? 'bg-[var(--accent-dim)] text-[var(--accent)]'
                   : 'text-[var(--text-secondary)] hover:bg-white/[0.06] hover:text-[var(--text-primary)]'
               )}
             >
               <Icon className="w-5 h-5 shrink-0" />
-              {expanded && <span className="text-sm font-medium truncate">{label}</span>}
-              {/* Tooltip when collapsed */}
-              {!expanded && (
-                <div className="absolute left-full ml-2 px-2 py-1 rounded-md text-xs whitespace-nowrap
-                  bg-[#1a2340] border border-white/[0.08] text-white/80
-                  opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                  {label}
-                </div>
-              )}
+              {showLabels && <span className="text-sm font-medium truncate">{label}</span>}
             </Link>
           )
         })}
@@ -99,22 +121,17 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
                 <Link
                   key={href}
                   href={href}
+                  onClick={onMobileClose}
+                  title={!showLabels ? label : undefined}
                   className={cn(
-                    'flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150 group relative',
+                    'flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150',
                     active
                       ? 'bg-[var(--accent-dim)] text-[var(--accent)]'
                       : 'text-[var(--text-secondary)] hover:bg-white/[0.06] hover:text-[var(--text-primary)]'
                   )}
                 >
                   <Icon className="w-5 h-5 shrink-0" />
-                  {expanded && <span className="text-sm font-medium truncate">{label}</span>}
-                  {!expanded && (
-                    <div className="absolute left-full ml-2 px-2 py-1 rounded-md text-xs whitespace-nowrap
-                      bg-[#1a2340] border border-white/[0.08] text-white/80
-                      opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                      {label}
-                    </div>
-                  )}
+                  {showLabels && <span className="text-sm font-medium truncate">{label}</span>}
                 </Link>
               )
             })}
@@ -122,10 +139,10 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
         )}
       </nav>
 
-      {/* Expand toggle */}
+      {/* Expand toggle — desktop only */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="m-2 flex items-center justify-center h-9 rounded-xl border border-white/[0.08]
+        className="m-2 hidden lg:flex items-center justify-center h-9 rounded-xl border border-white/[0.08]
           bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-white/40 hover:text-white/70"
       >
         <ChevronRight className={cn('w-4 h-4 transition-transform duration-300', expanded && 'rotate-180')} />

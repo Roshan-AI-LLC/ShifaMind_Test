@@ -111,11 +111,7 @@ export default function AdminPage() {
   const totalPages = reviews ? Math.ceil(reviews.total / PAGE_SIZE) : 0
 
   return (
-    <div
-      className="min-h-screen ml-16 pt-16 p-6 animate-fade-in"
-      style={{ background: 'var(--bg-deep)' }}
-    >
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -289,7 +285,6 @@ export default function AdminPage() {
             </div>
           )}
         </GlassCard>
-      </div>
     </div>
   )
 }

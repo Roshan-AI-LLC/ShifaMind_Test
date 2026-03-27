@@ -71,10 +71,31 @@ function LoginForm() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
       style={{ background: 'var(--bg-deep)' }}
     >
-      <div className="w-full max-w-md animate-fade-in">
+      {/* Ambient orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div
+          className="absolute w-[600px] h-[600px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(78,205,196,0.10), transparent 70%)',
+            top: '-15%', left: '-10%',
+            filter: 'blur(80px)',
+            animation: 'float 28s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute w-[400px] h-[400px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(167,139,250,0.07), transparent 70%)',
+            bottom: '-10%', right: '-5%',
+            filter: 'blur(80px)',
+            animation: 'float-reverse 22s ease-in-out infinite',
+          }}
+        />
+      </div>
+      <div className="w-full max-w-md animate-fade-in relative z-10">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div
@@ -235,6 +256,25 @@ function LoginForm() {
             </>
           )}
         </GlassCard>
+
+        {/* Demo credentials hint */}
+        <div
+          className="mt-4 px-4 py-3 rounded-xl text-center"
+          style={{
+            background: 'rgba(78,205,196,0.06)',
+            border: '1px solid rgba(78,205,196,0.15)',
+          }}
+        >
+          <p className="text-xs font-medium mb-1" style={{ color: 'var(--accent)' }}>
+            Demo credentials
+          </p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            doctor@shifamind.demo · password123
+          </p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+            Works offline — demo mode with mock predictions
+          </p>
+        </div>
 
         {/* Back to main site */}
         <div className="mt-6 text-center">

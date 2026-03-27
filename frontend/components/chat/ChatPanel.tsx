@@ -8,12 +8,18 @@ import type { ChatMessageLocal } from '@/hooks/useChat'
 interface ChatPanelProps {
   messages: ChatMessageLocal[]
   streaming: boolean
+  onSuggestionClick?: (text: string) => void
 }
 
-export function ChatPanel({ messages, streaming }: ChatPanelProps) {
+const SUGGESTIONS = [
+  'Why was heart failure predicted?',
+  'What are the key activated concepts?',
+  'What additional workup would you recommend?',
+]
+
+export function ChatPanel({ messages, streaming, onSuggestionClick }: ChatPanelProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streaming])
@@ -36,22 +42,30 @@ export function ChatPanel({ messages, streaming }: ChatPanelProps) {
           </p>
         </div>
         <div className="flex flex-col gap-2 w-full max-w-sm mt-2">
-          {[
-            'Why was heart failure predicted?',
-            'What are the key activated concepts?',
-            'What additional workup would you recommend?',
-          ].map(suggestion => (
-            <div
+          {SUGGESTIONS.map(suggestion => (
+            <button
               key={suggestion}
-              className="px-3 py-2 rounded-xl text-xs text-left cursor-default"
+              onClick={() => onSuggestionClick?.(suggestion)}
+              className="px-3 py-2 rounded-xl text-xs text-left transition-colors"
               style={{
                 background: 'var(--glass-bg)',
                 border: '1px solid var(--glass-border)',
                 color: 'var(--text-secondary)',
+                cursor: onSuggestionClick ? 'pointer' : 'default',
+              }}
+              onMouseEnter={e => {
+                if (onSuggestionClick) {
+                  e.currentTarget.style.background = 'var(--glass-hover)'
+                  e.currentTarget.style.color = 'var(--text-primary)'
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'var(--glass-bg)'
+                e.currentTarget.style.color = 'var(--text-secondary)'
               }}
             >
               {suggestion}
-            </div>
+            </button>
           ))}
         </div>
       </div>

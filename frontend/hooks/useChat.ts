@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, type Dispatch, type SetStateAction } from 'react'
 import { getAuthToken } from '@/lib/api'
+import { isDemoMode } from '@/lib/demo-mode'
+import { selectMockChatResponse } from '@/lib/mock-data'
 
 export interface ChatMessageLocal {
   id: string
@@ -20,9 +22,37 @@ interface UseChatState {
   sessionId: string | null
   streaming: boolean
   error: string | null
+  demoMode: boolean
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
+
+async function streamMockResponse(
+  message: string,
+  assistantId: string,
+  setState: Dispatch<SetStateAction<UseChatState>>
+) {
+  const fullText = selectMockChatResponse(message)
+  const tokens = fullText.split(/(?<=\s)|(?=\s)/)
+
+  for (const token of tokens) {
+    await new Promise(r => setTimeout(r, 20))
+    setState(prev => ({
+      ...prev,
+      messages: prev.messages.map(m =>
+        m.id === assistantId ? { ...m, content: m.content + token } : m
+      ),
+    }))
+  }
+
+  setState(prev => ({
+    ...prev,
+    streaming: false,
+    messages: prev.messages.map(m =>
+      m.id === assistantId ? { ...m, streaming: false } : m
+    ),
+  }))
+}
 
 export function useChat({ predictionId, initialSessionId }: UseChatOptions = {}) {
   const [state, setState] = useState<UseChatState>({
@@ -30,6 +60,7 @@ export function useChat({ predictionId, initialSessionId }: UseChatOptions = {})
     sessionId: initialSessionId ?? null,
     streaming: false,
     error: null,
+    demoMode: false,
   })
 
   const abortRef = useRef<AbortController | null>(null)
@@ -37,7 +68,6 @@ export function useChat({ predictionId, initialSessionId }: UseChatOptions = {})
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || state.streaming) return
 
-    // Abort any ongoing stream
     abortRef.current?.abort()
     const controller = new AbortController()
     abortRef.current = controller
@@ -60,6 +90,15 @@ export function useChat({ predictionId, initialSessionId }: UseChatOptions = {})
       streaming: true,
       error: null,
     }))
+
+    // Check demo mode
+    const demo = await isDemoMode()
+
+    if (demo) {
+      setState(prev => ({ ...prev, demoMode: true }))
+      await streamMockResponse(content, assistantMsg.id, setState)
+      return
+    }
 
     try {
       const token = await getAuthToken()
@@ -125,7 +164,7 @@ export function useChat({ predictionId, initialSessionId }: UseChatOptions = {})
             } else if (event.type === 'error') {
               throw new Error(event.content)
             }
-          } catch (parseErr) {
+          } catch {
             // Ignore malformed SSE lines
           }
         }
@@ -133,23 +172,15 @@ export function useChat({ predictionId, initialSessionId }: UseChatOptions = {})
     } catch (err) {
       if ((err as Error).name === 'AbortError') return
 
-      const message = err instanceof Error ? err.message : 'Chat failed'
-      setState(prev => ({
-        ...prev,
-        streaming: false,
-        error: message,
-        messages: prev.messages.map(m =>
-          m.id === assistantMsg.id
-            ? { ...m, streaming: false, content: m.content || '(error)' }
-            : m
-        ),
-      }))
+      // Fall back to mock streaming on network failure
+      setState(prev => ({ ...prev, demoMode: true }))
+      await streamMockResponse(content, assistantMsg.id, setState)
     }
   }, [state.streaming, state.sessionId, predictionId])
 
   const reset = useCallback(() => {
     abortRef.current?.abort()
-    setState({ messages: [], sessionId: null, streaming: false, error: null })
+    setState({ messages: [], sessionId: null, streaming: false, error: null, demoMode: false })
   }, [])
 
   return {
@@ -157,6 +188,7 @@ export function useChat({ predictionId, initialSessionId }: UseChatOptions = {})
     sessionId: state.sessionId,
     streaming: state.streaming,
     error: state.error,
+    demoMode: state.demoMode,
     sendMessage,
     reset,
   }

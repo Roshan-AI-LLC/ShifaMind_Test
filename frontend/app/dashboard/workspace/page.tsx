@@ -25,7 +25,7 @@ function ResultSkeleton() {
 }
 
 export default function WorkspacePage() {
-  const { runPrediction, loading, error, result } = usePrediction()
+  const { runPrediction, loading, error, result, demoMode } = usePrediction()
   const [activeTab, setActiveTab] = useState<ResultTab>('diagnoses')
   const [showFeedback, setShowFeedback] = useState(false)
   const [selectedCode, setSelectedCode] = useState<string | null>(null)
@@ -46,10 +46,14 @@ export default function WorkspacePage() {
 
   return (
     <div className="max-w-7xl mx-auto animate-fade-in">
-      <div className="flex gap-6" style={{ minHeight: 'calc(100vh - 140px)' }}>
+      {/* Responsive split pane: stacked on mobile, side-by-side on lg+ */}
+      <div
+        className="flex flex-col lg:flex-row gap-6"
+        style={{ minHeight: 'calc(100vh - 140px)' }}
+      >
         {/* ── Left pane: Note input ── */}
-        <div className="w-[420px] shrink-0">
-          <GlassCard className="p-5 h-full">
+        <div className="w-full lg:w-[420px] lg:shrink-0">
+          <GlassCard className="p-6 h-full">
             <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
               Clinical Note
             </h2>
@@ -78,11 +82,11 @@ export default function WorkspacePage() {
           )}
 
           {loading && (
-            <GlassCard className="p-5 h-full">
+            <GlassCard className="p-6 h-full">
               <div className="mb-4">
                 <div className="skeleton h-5 w-32 rounded mb-3" />
                 <div className="flex gap-3 mb-4">
-                  {[0, 1, 2].map(i => <div key={i} className="skeleton h-8 w-24 rounded-lg" />)}
+                  {[0, 1, 2].map(i => <div key={i} className="skeleton h-8 w-24 rounded-xl" />)}
                 </div>
               </div>
               <ResultSkeleton />
@@ -99,9 +103,9 @@ export default function WorkspacePage() {
           )}
 
           {result && !loading && (
-            <GlassCard className="p-5 flex flex-col h-full">
+            <GlassCard className="p-6 flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center justify-between mb-4 shrink-0">
+              <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
                   <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                     Prediction Results
@@ -112,12 +116,20 @@ export default function WorkspacePage() {
                   >
                     {result.metadata.inference_time_ms}ms
                   </span>
+                  {demoMode && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-lg"
+                      style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}
+                    >
+                      Demo
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   {result.prediction_id && (
                     <button
                       onClick={() => setShowFeedback(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-colors"
                       style={{
                         background: 'rgba(255,217,61,0.1)',
                         color: 'var(--accent-gold)',
@@ -131,7 +143,7 @@ export default function WorkspacePage() {
                   {result.prediction_id && (
                     <Link
                       href={`/dashboard/chat?prediction_id=${result.prediction_id}`}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all"
                       style={{
                         background: 'var(--accent-dim)',
                         color: 'var(--accent)',
@@ -139,7 +151,7 @@ export default function WorkspacePage() {
                       }}
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
-                      Discuss this case →
+                      Discuss →
                     </Link>
                   )}
                 </div>
@@ -147,14 +159,14 @@ export default function WorkspacePage() {
 
               {/* Tabs */}
               <div
-                className="flex gap-1 mb-4 p-1 rounded-xl shrink-0"
+                className="flex gap-1 mb-4 p-1 rounded-xl shrink-0 overflow-x-auto"
                 style={{ background: 'var(--glass-bg)' }}
               >
                 {TABS.map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className="flex-1 py-1.5 rounded-lg text-sm font-medium transition-all"
+                    className="flex-1 py-1.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap"
                     style={{
                       background: activeTab === tab.id ? 'rgba(255,255,255,0.07)' : 'transparent',
                       color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-secondary)',
