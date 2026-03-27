@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { User, Mail, Building2, Stethoscope, Key, Loader2, CheckCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { GlassCard } from '@/components/shared/GlassCard'
 import { useToast } from '@/components/shared/Toast'
 
@@ -52,7 +53,6 @@ export default function ProfilePage() {
   useEffect(() => {
     async function load() {
       try {
-        const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) throw new Error('No session')
@@ -90,7 +90,6 @@ export default function ProfilePage() {
     if (!profile?.email || isDemo) return
     setSendingLink(true)
     try {
-      const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithOtp({
         email: profile.email,

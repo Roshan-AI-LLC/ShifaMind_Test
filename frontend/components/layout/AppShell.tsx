@@ -1,22 +1,56 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { isDemoMode } from '@/lib/demo-mode'
+import { useAuth } from '@/hooks/useAuth'
 
 interface AppShellProps {
-  isAdmin?: boolean
+  /** Pass true from admin/layout.tsx to redirect non-admins to /dashboard. */
+  requireAdmin?: boolean
   children: React.ReactNode
 }
 
-export function AppShell({ isAdmin = false, children }: AppShellProps) {
+export function AppShell({ requireAdmin = false, children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [showDemoBanner, setShowDemoBanner] = useState(false)
+  const { user, doctor, loading } = useAuth()
+  const router = useRouter()
+  const isAdmin = doctor?.role === 'admin'
 
+  // Demo banner — checked once
   useEffect(() => {
     isDemoMode().then(setShowDemoBanner)
   }, [])
+
+  // Client-side auth guard
+  useEffect(() => {
+    if (loading) return
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    if (requireAdmin && !isAdmin) {
+      router.push('/dashboard')
+    }
+  }, [loading, user, isAdmin, requireAdmin, router])
+
+  // While auth is resolving, render just the background (no flash of unauthed content)
+  if (loading || (!user && !loading)) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: 'var(--bg-deep)' }}
+      >
+        <div
+          className="w-2 h-2 rounded-full animate-pulse"
+          style={{ background: 'var(--accent)' }}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen relative" style={{ background: 'var(--bg-deep)' }}>

@@ -101,6 +101,7 @@ export function Sidebar({ isAdmin = false, mobileOpen = false, onMobileClose }: 
             <Link
               key={href}
               href={href}
+              prefetch={true}
               onClick={onMobileClose}
               title={!showLabels ? label : undefined}
               className={cn(
@@ -128,6 +129,7 @@ export function Sidebar({ isAdmin = false, mobileOpen = false, onMobileClose }: 
                 <Link
                   key={href}
                   href={href}
+                  prefetch={true}
                   onClick={onMobileClose}
                   title={!showLabels ? label : undefined}
                   className={cn(

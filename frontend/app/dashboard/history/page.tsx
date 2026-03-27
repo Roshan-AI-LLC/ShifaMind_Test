@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { History, MessageSquare, ChevronDown, ChevronUp, FlaskConical } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { GlassCard } from '@/components/shared/GlassCard'
 import { ConfidenceBar } from '@/components/shared/ConfidenceBar'
 import { ConceptBadge } from '@/components/shared/ConceptBadge'
@@ -180,7 +181,6 @@ export default function HistoryPage() {
   useEffect(() => {
     async function load() {
       try {
-        const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
         const { data, error } = await supabase
           .from('predictions')

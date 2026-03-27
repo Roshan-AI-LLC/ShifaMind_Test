@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { User } from '@supabase/supabase-js'
-import { createClient } from '@/lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
 
 interface Doctor {
   id: string
@@ -20,50 +19,101 @@ interface AuthState {
   loading: boolean
 }
 
-export function useAuth(): AuthState {
-  const [user, setUser] = useState<User | null>(null)
-  const [doctor, setDoctor] = useState<Doctor | null>(null)
-  const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+// ── Module-level singleton ────────────────────────────────────────────────────
+// Shared across every useAuth() caller so we fetch exactly once per session.
 
-  useEffect(() => {
-    async function getSession() {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+let _user: User | null = null
+let _doctor: Doctor | null = null
+let _loading = true
+let _initialized = false
+const _listeners = new Set<() => void>()
 
-      if (user) {
-        const { data } = await supabase
-          .from('doctors')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-        setDoctor(data)
-      }
+function notify() {
+  _listeners.forEach(fn => fn())
+}
 
-      setLoading(false)
-    }
+function initAuth() {
+  if (_initialized) return
+  _initialized = true
 
-    getSession()
+  // Lazy import avoids calling createBrowserClient at module load time
+  // (which throws when env vars are missing — e.g. demo environment)
+  import('@/lib/supabase/client').then(({ createClient }) => {
+    const supabase = createClient()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null)
+    supabase.auth.getUser()
+      .then(({ data: { user } }) => {
+        _user = user
+        if (user) {
+          supabase
+            .from('doctors')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+            .then(({ data }) => {
+              _doctor = data
+              _loading = false
+              notify()
+            })
+            .catch(() => {
+              _loading = false
+              notify()
+            })
+        } else {
+          _loading = false
+          notify()
+        }
+      })
+      .catch(() => {
+        _loading = false
+        notify()
+      })
 
-      if (session?.user) {
-        const { data } = await supabase
+    supabase.auth.onAuthStateChange((_event, session) => {
+      _user = session?.user ?? null
+      if (!session?.user) {
+        _doctor = null
+        _loading = false
+        notify()
+      } else {
+        supabase
           .from('doctors')
           .select('*')
           .eq('id', session.user.id)
           .single()
-        setDoctor(data)
-      } else {
-        setDoctor(null)
+          .then(({ data }) => {
+            _doctor = data
+            notify()
+          })
+          .catch(() => notify())
       }
-
-      setLoading(false)
     })
+  }).catch(() => {
+    // Supabase not configured (demo env) — mark as loaded with no user
+    _loading = false
+    notify()
+  })
+}
 
-    return () => subscription.unsubscribe()
+// ── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useAuth(): AuthState {
+  // forceUpdate triggers a re-render when the module-level state changes
+  const [, forceUpdate] = useState(0)
+
+  useEffect(() => {
+    initAuth()
+
+    const listener = () => forceUpdate(n => n + 1)
+    _listeners.add(listener)
+
+    // If already initialized, trigger one render so stale state is flushed
+    if (!_loading) listener()
+
+    return () => {
+      _listeners.delete(listener)
+    }
   }, [])
 
-  return { user, doctor, loading }
+  return { user: _user, doctor: _doctor, loading: _loading }
 }
