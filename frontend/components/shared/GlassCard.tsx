@@ -12,11 +12,11 @@ export function GlassCard({ children, className, hover }: GlassCardProps) {
   return (
     <div
       className={cn(
-        'rounded-2xl transition-all duration-300',
+        'rounded-2xl transition-all duration-300 ease-in-out',
         hover && [
           'cursor-pointer',
           'hover:bg-white/[0.07]',
-          'hover:border-white/[0.14]',
+          'hover:border-white/[0.12]',
           'hover:shadow-xl hover:shadow-black/25',
           'hover:-translate-y-0.5',
         ],

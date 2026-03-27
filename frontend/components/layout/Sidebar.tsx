@@ -112,7 +112,11 @@ export function Sidebar({ isAdmin = false, mobileOpen = false, onMobileClose }: 
                   ? 'bg-white/[0.08] border-l-[#4ecdc4] text-[var(--accent)]'
                   : 'border-l-transparent text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
               )}
-              style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'backwards' }}
+              style={{
+                animationDelay: `${i * 40}ms`,
+                animationFillMode: 'backwards',
+                ...(active && { boxShadow: 'inset 3px 0 8px rgba(78,205,196,0.15)' }),
+              }}
             >
               <Icon className="w-5 h-5 shrink-0" />
               {showLabels && <span className="text-sm font-medium truncate">{label}</span>}

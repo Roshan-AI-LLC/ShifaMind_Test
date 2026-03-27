@@ -53,7 +53,7 @@ export default async function DashboardPage() {
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
       {/* Welcome */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+        <h1 className="text-xl sm:text-2xl font-semibold mb-1 gradient-text">
           Welcome back{lastName ? `, Dr. ${lastName}` : ''}
         </h1>
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -142,8 +142,8 @@ export default async function DashboardPage() {
           <Link
             href="/dashboard/workspace"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all
-              hover:brightness-110 hover:shadow-[0_0_20px_rgba(78,205,196,0.3)] active:scale-[0.98]"
-            style={{ background: '#4ecdc4', color: '#060a13' }}
+              hover:brightness-110 hover:shadow-[0_4px_30px_rgba(78,205,196,0.4)] active:scale-[0.98]"
+            style={{ background: '#4ecdc4', color: '#060a13', boxShadow: '0 4px 20px rgba(78,205,196,0.25)' }}
           >
             Open Workspace →
           </Link>

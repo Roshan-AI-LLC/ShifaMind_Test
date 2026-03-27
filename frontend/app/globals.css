@@ -130,6 +130,14 @@
   .text-primary-custom { color: var(--text-primary); }
   .text-secondary-custom { color: var(--text-secondary); }
   .text-muted-custom { color: var(--text-muted); }
+
+  /* Gradient accent text — matches landing page hero treatment */
+  .gradient-text {
+    background: linear-gradient(135deg, #4ecdc4, #7de8e1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 /* ── Keyframes not defined in Tailwind config ── */

@@ -66,13 +66,27 @@ export default function WorkspacePage() {
         <div className="flex-1 min-w-0">
           {!result && !loading && !error && (
             <GlassCard className="h-full flex flex-col items-center justify-center p-12 text-center">
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 animate-pulse"
-                style={{ background: 'var(--accent-dim)', boxShadow: '0 0 24px rgba(78,205,196,0.2)' }}
-              >
-                <Zap className="w-7 h-7" style={{ color: 'var(--accent)' }} />
+              <div className="relative mb-5">
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(78,205,196,0.25), transparent 70%)',
+                    filter: 'blur(16px)',
+                    transform: 'scale(1.5)',
+                  }}
+                />
+                <div
+                  className="relative w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse"
+                  style={{
+                    background: 'var(--accent-dim)',
+                    border: '1px solid var(--accent-glow)',
+                    boxShadow: '0 0 30px rgba(78,205,196,0.2)',
+                  }}
+                >
+                  <Zap className="w-7 h-7" style={{ color: 'var(--accent)' }} />
+                </div>
               </div>
-              <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="font-semibold mb-2 gradient-text text-lg">
                 Ready to analyze
               </h3>
               <p className="text-sm max-w-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
@@ -175,9 +189,14 @@ export default function WorkspacePage() {
                     className={cn(
                       'flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all duration-200 whitespace-nowrap',
                       activeTab === tab.id
-                        ? 'bg-white/[0.1] text-white shadow-sm'
+                        ? 'shadow-sm'
                         : 'text-white/40 hover:text-white/60 hover:bg-white/[0.04]'
                     )}
+                    style={activeTab === tab.id ? {
+                      background: 'rgba(78,205,196,0.12)',
+                      color: 'var(--accent)',
+                      border: '1px solid rgba(78,205,196,0.2)',
+                    } : undefined}
                   >
                     {tab.label}
                   </button>

@@ -59,9 +59,15 @@ export function PredictionPanel({
           className={cn(
             'rounded-xl border transition-all duration-150 overflow-hidden',
             pred.above_threshold
-              ? 'border-[var(--glass-border)] bg-white/[0.03]'
+              ? pred.rank === 1
+                ? 'border-[rgba(78,205,196,0.3)] bg-white/[0.04]'
+                : 'border-[var(--glass-border)] bg-white/[0.03]'
               : 'border-white/[0.04] bg-transparent opacity-50'
           )}
+          style={pred.rank === 1 && pred.above_threshold ? {
+            borderLeft: '2px solid #4ecdc4',
+            boxShadow: '0 0 20px rgba(78,205,196,0.06), inset 3px 0 12px rgba(78,205,196,0.08)',
+          } : undefined}
         >
           {/* Row */}
           <button
@@ -74,8 +80,11 @@ export function PredictionPanel({
           >
             {/* Rank */}
             <span
-              className="text-2xl font-bold w-8 shrink-0 tabular-nums"
-              style={{ color: 'var(--text-muted)' }}
+              className={cn(
+                'text-2xl font-bold w-8 shrink-0 tabular-nums',
+                pred.rank === 1 && pred.above_threshold ? 'gradient-text' : ''
+              )}
+              style={pred.rank === 1 && pred.above_threshold ? {} : { color: 'var(--text-muted)' }}
             >
               {pred.rank}
             </span>
@@ -103,12 +112,25 @@ export function PredictionPanel({
               </p>
             </div>
 
-            {/* Confidence bar */}
-            <div className="w-20 sm:w-32 shrink-0">
-              <ConfidenceBar value={pred.confidence} />
-              <p className="text-xs mt-1 text-right font-mono" style={{ color: 'var(--text-muted)' }}>
-                thr: {(pred.threshold * 100).toFixed(0)}%
-              </p>
+            {/* Confidence */}
+            <div className="shrink-0 text-right">
+              {pred.rank === 1 && pred.above_threshold ? (
+                <>
+                  <p className="text-xl font-bold tabular-nums gradient-text leading-none">
+                    {(pred.confidence * 100).toFixed(0)}%
+                  </p>
+                  <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>
+                    confidence
+                  </p>
+                </>
+              ) : (
+                <div className="w-20 sm:w-28">
+                  <ConfidenceBar value={pred.confidence} />
+                  <p className="text-xs mt-1 text-right font-mono" style={{ color: 'var(--text-muted)' }}>
+                    thr: {(pred.threshold * 100).toFixed(0)}%
+                  </p>
+                </div>
+              )}
             </div>
 
             {pred.above_threshold && (

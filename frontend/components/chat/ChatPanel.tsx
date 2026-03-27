@@ -27,14 +27,28 @@ export function ChatPanel({ messages, streaming, onSuggestionClick }: ChatPanelP
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 px-8 text-center">
-        <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center"
-          style={{ background: 'var(--accent-dim)' }}
-        >
-          <Brain className="w-6 h-6" style={{ color: 'var(--accent)' }} />
+        <div className="relative">
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(78,205,196,0.25), transparent 70%)',
+              filter: 'blur(12px)',
+              transform: 'scale(1.5)',
+            }}
+          />
+          <div
+            className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{
+              background: 'var(--accent-dim)',
+              border: '1px solid var(--accent-glow)',
+              boxShadow: '0 0 24px rgba(78,205,196,0.15)',
+            }}
+          >
+            <Brain className="w-7 h-7" style={{ color: 'var(--accent)' }} />
+          </div>
         </div>
         <div>
-          <p className="font-medium text-sm mb-1" style={{ color: 'var(--text-primary)' }}>
+          <p className="font-medium text-sm mb-1 gradient-text">
             ShifaMind Clinical Assistant
           </p>
           <p className="text-xs leading-relaxed max-w-xs" style={{ color: 'var(--text-secondary)' }}>

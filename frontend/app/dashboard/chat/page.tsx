@@ -82,7 +82,7 @@ function ChatContent() {
             style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(20px)' }}
           >
             <div>
-              <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              <h2 className="text-sm font-semibold gradient-text">
                 Clinical Assistant
               </h2>
               <div className="flex items-center gap-2">
