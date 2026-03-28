@@ -51,7 +51,7 @@ async def load_model(settings) -> None:
         return
 
     # Add model/ dir to path so we can import ShifaMind2Phase1
-    repo_root = Path(__file__).resolve().parents[4]  # …/ShifaMind_Test/
+    repo_root = Path(__file__).resolve().parents[3]  # models/ → app/ → backend/ → repo root
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
 
