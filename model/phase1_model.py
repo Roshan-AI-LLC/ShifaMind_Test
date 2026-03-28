@@ -1,138 +1,143 @@
 """
 ShifaMind Phase 1 Model — inference-only definition.
 
-Architecture:
-  1. BioClinicalBERT encoder → [CLS] embedding (768-dim)
-  2. Concept head: Linear(768 → 111) → sigmoid → concept_scores
-  3. Learnable concept embeddings: (111, 768)
-  4. Cross-attention injection at BERT layers [9, 11]:
-       - concept_scores used as attention bias
-  5. Multiplicative gate: concept_scores[:, :, None] * concept_embeddings
-       → pooled concept feature (768-dim)
-  6. Diagnosis head: Linear(768 → 50) → logits → sigmoid
-  7. Concept completeness coefficient = 1.0 (fully concept-bottlenecked)
+Architecture (reconstructed from checkpoint 20260301_112200, epoch 10,
+macro_f1=0.451):
 
-Only forward() is included — no training logic.
+  base_model       BioClinicalBERT (12-layer, vocab=28996)
+  concept_embeddings  nn.Parameter [111, 768]  (learnable concept prototypes)
+  fusion_modules   ConceptFusionModule at BERT layers 9 and 11
+                     — cross-attention: BERT tokens (Q) attend to concepts (K,V)
+                     — gated residual + LayerNorm
+  concept_head     nn.Linear(768 → 111)  applied to pooler [CLS] output
+  diagnosis_head   nn.Linear(768 → 50)   applied to pooler [CLS] output
+
+State-dict key prefix:  base_model.*  (not bert.*)
+BertConfig is hardcoded from checkpoint weight shapes — no HuggingFace
+download needed for the model itself (tokenizer loaded separately).
 """
 
+import math
 import torch
 import torch.nn as nn
-from transformers import AutoModel
-
-from .config import (
-    BIOCLINICALBERT_MODEL,
-    NUM_CONCEPTS,
-    NUM_CODES,
-    CROSS_ATTENTION_LAYERS,
-)
+from transformers import BertConfig, BertModel
 
 
-class ConceptCrossAttention(nn.Module):
+# ── Concept Fusion Module ─────────────────────────────────────────────────────
+
+class ConceptFusionModule(nn.Module):
     """
-    Injects concept information into a BERT layer via cross-attention.
-    concept_scores shape: (B, C)  where C = NUM_CONCEPTS
-    hidden_state shape:   (B, T, H)
+    Cross-attention fusion between BERT hidden states and concept embeddings.
+
+    BERT hidden states act as queries; concept embeddings act as keys/values.
+    A two-layer gating MLP controls how much concept signal is blended in.
+    Applied as a residual on top of the BERT layer output.
+
+    gate_net indices (4-element Sequential, only 0 and 3 have weights):
+        [0] Linear(1536 → 768)
+        [1] GELU
+        [2] Dropout(0.1)
+        [3] Linear(768 → 768)
     """
 
-    def __init__(self, hidden_size: int, num_concepts: int):
+    def __init__(self, hidden_size: int = 768):
         super().__init__()
-        self.num_concepts = num_concepts
-        # Project concept scores to per-token attention bias
-        self.concept_proj = nn.Linear(num_concepts, hidden_size, bias=False)
-        self.gate = nn.Linear(hidden_size * 2, hidden_size)
-        self.norm = nn.LayerNorm(hidden_size)
+        self.query    = nn.Linear(hidden_size, hidden_size)
+        self.key      = nn.Linear(hidden_size, hidden_size)
+        self.value    = nn.Linear(hidden_size, hidden_size)
+        self.out_proj = nn.Linear(hidden_size, hidden_size)
+        self.gate_net = nn.Sequential(
+            nn.Linear(hidden_size * 2, hidden_size),  # index 0
+            nn.GELU(),                                 # index 1
+            nn.Dropout(0.1),                           # index 2
+            nn.Linear(hidden_size, hidden_size),       # index 3
+        )
+        self.layer_norm = nn.LayerNorm(hidden_size)
 
-    def forward(self, hidden_state: torch.Tensor, concept_scores: torch.Tensor) -> torch.Tensor:
-        # concept_scores: (B, C) → (B, H)
-        concept_feat = self.concept_proj(concept_scores)  # (B, H)
-        concept_feat = concept_feat.unsqueeze(1).expand_as(hidden_state)  # (B, T, H)
+    def forward(
+        self,
+        hidden_states: torch.Tensor,       # (B, seq_len, H)
+        concept_embeddings: torch.Tensor,  # (num_concepts, H)  — shared Parameter
+    ) -> torch.Tensor:
+        B = hidden_states.shape[0]
+        scale = math.sqrt(hidden_states.shape[-1])
 
-        # Gated fusion
-        combined = torch.cat([hidden_state, concept_feat], dim=-1)  # (B, T, 2H)
-        gate_val = torch.sigmoid(self.gate(combined))  # (B, T, H)
-        fused = hidden_state * gate_val + concept_feat * (1 - gate_val)
-        return self.norm(fused)
+        # Expand concept embeddings to batch
+        C = concept_embeddings.unsqueeze(0).expand(B, -1, -1)  # (B, 111, H)
 
+        # Cross-attention: hidden tokens attend to concepts
+        q = self.query(hidden_states)  # (B, seq_len, H)
+        k = self.key(C)                # (B, 111, H)
+        v = self.value(C)              # (B, 111, H)
+
+        attn_weights = torch.softmax(
+            torch.bmm(q, k.transpose(1, 2)) / scale, dim=-1
+        )                              # (B, seq_len, 111)
+        attn_out = torch.bmm(attn_weights, v)  # (B, seq_len, H)
+        attn_out = self.out_proj(attn_out)
+
+        # Gated residual: sigmoid(gate_net([hidden, attn_out])) * attn_out
+        gate_in = torch.cat([hidden_states, attn_out], dim=-1)  # (B, seq_len, 2H)
+        gate    = torch.sigmoid(self.gate_net(gate_in))          # (B, seq_len, H)
+        fused   = self.layer_norm(hidden_states + gate * attn_out)
+        return fused
+
+
+# ── Main Model ────────────────────────────────────────────────────────────────
 
 class ShifaMind2Phase1(nn.Module):
     """
     Concept Bottleneck Model on top of BioClinicalBERT.
-    Concept completeness = 1.0 — diagnoses predicted solely through concepts.
+
+    forward() returns a dict so inference.py can access named outputs:
+        concept_scores:   (B, 111)  sigmoid-activated, values in [0, 1]
+        diagnosis_probs:  (B, 50)   sigmoid-activated, values in [0, 1]
+        diagnosis_logits: (B, 50)   raw (for completeness)
     """
+
+    # Hardcoded from checkpoint weight shapes — matches Bio_ClinicalBERT
+    _BERT_CONFIG = BertConfig(
+        vocab_size=28996,            # word_embeddings.weight [28996, 768]
+        hidden_size=768,
+        num_hidden_layers=12,        # layers 0-11
+        num_attention_heads=12,
+        intermediate_size=3072,      # intermediate.dense.weight [3072, 768]
+        max_position_embeddings=512, # position_embeddings.weight [512, 768]
+        type_vocab_size=2,           # token_type_embeddings.weight [2, 768]
+        pad_token_id=0,
+    )
 
     def __init__(
         self,
-        bert_model_name: str = BIOCLINICALBERT_MODEL,
-        num_concepts: int = NUM_CONCEPTS,
-        num_codes: int = NUM_CODES,
-        cross_attention_layers: list[int] = CROSS_ATTENTION_LAYERS,
+        num_concepts: int = 111,
+        num_classes: int = 50,
+        fusion_layers: list[int] | None = None,
     ):
         super().__init__()
+        if fusion_layers is None:
+            fusion_layers = [9, 11]
 
-        self.num_concepts = num_concepts
-        self.num_codes = num_codes
-        self.cross_attention_layers = cross_attention_layers
+        self.num_concepts   = num_concepts
+        self.num_classes    = num_classes
+        self.fusion_layers  = fusion_layers
+        H = self._BERT_CONFIG.hidden_size  # 768
 
-        # 1. BioClinicalBERT backbone
-        self.bert = AutoModel.from_pretrained(bert_model_name)
-        hidden_size = self.bert.config.hidden_size  # 768
+        # BioClinicalBERT backbone (weights loaded from checkpoint, no HF download)
+        self.base_model = BertModel(self._BERT_CONFIG, add_pooling_layer=True)
 
-        # 2. Concept head: CLS → concept logits
-        self.concept_head = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size // 2),
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Linear(hidden_size // 2, num_concepts),
-        )
+        # Learnable concept prototype matrix (nn.Parameter — not nn.Embedding)
+        self.concept_embeddings = nn.Parameter(torch.zeros(num_concepts, H))
 
-        # 3. Learnable concept embeddings (111, 768)
-        self.concept_embeddings = nn.Embedding(num_concepts, hidden_size)
-
-        # 4. Cross-attention modules for specified BERT layers
-        self.cross_attn = nn.ModuleDict({
-            str(layer_idx): ConceptCrossAttention(hidden_size, num_concepts)
-            for layer_idx in cross_attention_layers
+        # Concept-aware fusion at specified BERT encoder layers
+        self.fusion_modules = nn.ModuleDict({
+            str(i): ConceptFusionModule(H) for i in fusion_layers
         })
 
-        # 5. Concept bottleneck projection
-        self.bottleneck_proj = nn.Linear(hidden_size, hidden_size)
+        # Classification heads applied to pooler [CLS] output
+        self.concept_head   = nn.Linear(H, num_concepts)
+        self.diagnosis_head = nn.Linear(H, num_classes)
 
-        # 6. Diagnosis head: concept-gated features → ICD-10 logits
-        self.diagnosis_head = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size // 2),
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Linear(hidden_size // 2, num_codes),
-        )
-
-    def _encode_with_concept_injection(
-        self,
-        input_ids: torch.Tensor,
-        attention_mask: torch.Tensor,
-        concept_scores: torch.Tensor,
-    ) -> torch.Tensor:
-        """
-        Run BERT encoder, injecting concept context at layers 9 and 11.
-        Returns final [CLS] hidden state.
-        """
-        # Embedding layer
-        embedding_output = self.bert.embeddings(input_ids=input_ids)
-        hidden_state = embedding_output
-
-        # Build extended attention mask (BERT convention)
-        extended_mask = self.bert.get_extended_attention_mask(
-            attention_mask, input_ids.shape
-        )
-
-        # Run through each encoder layer
-        for i, layer in enumerate(self.bert.encoder.layer):
-            layer_out = layer(hidden_state, attention_mask=extended_mask)
-            hidden_state = layer_out[0]
-
-            if str(i) in self.cross_attn:
-                hidden_state = self.cross_attn[str(i)](hidden_state, concept_scores)
-
-        return hidden_state[:, 0, :]  # [CLS] token
+    # ── Forward ──────────────────────────────────────────────────────────────
 
     def forward(
         self,
@@ -140,50 +145,39 @@ class ShifaMind2Phase1(nn.Module):
         attention_mask: torch.Tensor,
         token_type_ids: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
-        """
-        Args:
-            input_ids:      (B, T)
-            attention_mask: (B, T)
-            token_type_ids: (B, T) — optional, ignored if absent
 
-        Returns dict with:
-            concept_scores:   (B, 111)  values in [0, 1]
-            diagnosis_logits: (B, 50)   raw logits
-            diagnosis_probs:  (B, 50)   values in [0, 1]
-        """
-        # ── Step 1: Initial BERT pass to get CLS for concept head ──
-        initial_out = self.bert(
+        # 1. Token + position + type embeddings
+        hidden_states = self.base_model.embeddings(
             input_ids=input_ids,
-            attention_mask=attention_mask,
             token_type_ids=token_type_ids,
         )
-        cls_initial = initial_out.last_hidden_state[:, 0, :]  # (B, H)
 
-        # ── Step 2: Concept scores from initial CLS ──
-        concept_logits = self.concept_head(cls_initial)  # (B, C)
-        concept_scores = torch.sigmoid(concept_logits)   # (B, C)
-
-        # ── Step 3: Second pass with concept injection ──
-        cls_concept_aware = self._encode_with_concept_injection(
-            input_ids, attention_mask, concept_scores
+        # 2. BERT extended attention mask (-10000 for padding positions)
+        extended_mask = self.base_model.get_extended_attention_mask(
+            attention_mask, input_ids.shape
         )
 
-        # ── Step 4: Multiplicative gate — concept scores × concept embeddings ──
-        # concept_scores: (B, C) → (B, C, 1)
-        # concept_embeddings weight: (C, H)
-        concept_emb = self.concept_embeddings.weight.unsqueeze(0)  # (1, C, H)
-        gated = concept_scores.unsqueeze(-1) * concept_emb          # (B, C, H)
-        concept_feature = gated.sum(dim=1)                          # (B, H) pooled
+        # 3. Layer-by-layer encoding with concept fusion at layers 9 and 11
+        for i, layer in enumerate(self.base_model.encoder.layer):
+            layer_out     = layer(hidden_states, attention_mask=extended_mask)
+            hidden_states = layer_out[0]
+            if str(i) in self.fusion_modules:
+                hidden_states = self.fusion_modules[str(i)](
+                    hidden_states, self.concept_embeddings
+                )
 
-        # ── Step 5: Blend concept-aware CLS with concept feature ──
-        bottleneck = self.bottleneck_proj(cls_concept_aware + concept_feature)  # (B, H)
+        # 4. Pool: tanh(dense([CLS]))  — matches base_model.pooler
+        pooled = self.base_model.pooler(hidden_states)  # (B, H)
 
-        # ── Step 6: Diagnosis prediction through bottleneck ──
-        diagnosis_logits = self.diagnosis_head(bottleneck)      # (B, 50)
-        diagnosis_probs = torch.sigmoid(diagnosis_logits)        # (B, 50)
+        # 5. Concept and diagnosis predictions from the same pooled representation
+        concept_logits   = self.concept_head(pooled)            # (B, 111)
+        diagnosis_logits = self.diagnosis_head(pooled)          # (B, 50)
+
+        concept_scores  = torch.sigmoid(concept_logits)         # (B, 111)
+        diagnosis_probs = torch.sigmoid(diagnosis_logits)       # (B, 50)
 
         return {
-            "concept_scores": concept_scores,
+            "concept_scores":   concept_scores,
+            "diagnosis_probs":  diagnosis_probs,
             "diagnosis_logits": diagnosis_logits,
-            "diagnosis_probs": diagnosis_probs,
         }
