@@ -1,6 +1,7 @@
 import { Brain } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ChatMessageLocal } from '@/hooks/useChat'
+import ReactMarkdown from 'react-markdown'
 
 interface ChatMessageProps {
   message: ChatMessageLocal
@@ -66,9 +67,22 @@ export function ChatMessage({ message }: ChatMessageProps) {
       >
         {message.streaming && !message.content ? (
           <TypingIndicator />
-        ) : (
+        ) : isUser ? (
           <div className="whitespace-pre-wrap">
             {message.content}
+          </div>
+        ) : (
+          <div className="prose prose-invert prose-sm max-w-none
+            prose-headings:text-[var(--text-primary)] prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1
+            prose-h3:text-sm prose-h2:text-sm
+            prose-p:text-[var(--text-primary)] prose-p:my-1 prose-p:leading-relaxed
+            prose-strong:text-[var(--accent)] prose-strong:font-semibold
+            prose-em:text-[var(--text-secondary)]
+            prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5
+            prose-li:text-[var(--text-primary)]
+            prose-code:text-[var(--accent)] prose-code:bg-white/5 prose-code:px-1 prose-code:rounded
+            prose-hr:border-white/10">
+            <ReactMarkdown>{message.content}</ReactMarkdown>
             {message.streaming && (
               <span
                 className="inline-block w-0.5 h-4 ml-0.5 align-text-bottom animate-pulse"
