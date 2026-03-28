@@ -3,10 +3,14 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # Supabase
+    # Supabase (new key format: sb_publishable_* / sb_secret_*)
     SUPABASE_URL: str
-    SUPABASE_ANON_KEY: str
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: str
     SUPABASE_SERVICE_ROLE_KEY: str
+
+    @property
+    def SUPABASE_ANON_KEY(self) -> str:
+        return self.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     # LLM
     LLM_PROVIDER: str = "openrouter"
