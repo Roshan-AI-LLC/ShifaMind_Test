@@ -1,297 +1,203 @@
-'use client'
+"use client"
 
-import { Suspense, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Brain, Mail, Lock, ArrowRight, Loader2, ExternalLink } from 'lucide-react'
-import { GlassCard } from '@/components/shared/GlassCard'
+import * as React from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Brain, Mail, Lock, ArrowRight, Sparkles, ArrowLeft } from "lucide-react"
+import { AmbientBackground } from "@/components/ambient-background"
+import { GlassCard } from "@/components/ui/glass-card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
 
-type Mode = 'password' | 'magic'
+type AuthMode = "password" | "magic-link"
 
 export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
-  )
-}
-
-function LoginForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo') ?? '/dashboard'
+  const [mode, setMode] = React.useState<AuthMode>("password")
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [magicLinkSent, setMagicLinkSent] = React.useState(false)
 
-  const [mode, setMode] = useState<Mode>('password')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [magicSent, setMagicSent] = useState(false)
-
-  const supabase = createClient()
-
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setLoading(true)
+    setIsLoading(true)
 
-    try {
-      if (mode === 'password') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) {
-          setError(
-            error.message === 'Invalid login credentials'
-              ? 'Invalid email or password. Please try again.'
-              : error.message
-          )
-          setLoading(false)
-          return
-        }
-        router.push(redirectTo)
-      } else {
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-          },
-        })
-        if (error) {
-          setError(error.message)
-          setLoading(false)
-          return
-        }
-        setMagicSent(true)
-        setLoading(false)
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Connection error. Check your Supabase URL and key in .env.local.')
-      setLoading(false)
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    if (mode === "magic-link") {
+      setMagicLinkSent(true)
+      setIsLoading(false)
+    } else {
+      // For demo, just redirect to dashboard
+      router.push("/dashboard")
     }
   }
 
+  const handleDemoLogin = () => {
+    setEmail("demo@shifamind.me")
+    setPassword("demo123")
+  }
+
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: 'var(--bg-deep)' }}
-    >
-      {/* Ambient orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div
-          className="absolute w-[600px] h-[600px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(78,205,196,0.10), transparent 70%)',
-            top: '-15%', left: '-10%',
-            filter: 'blur(80px)',
-            animation: 'float 28s ease-in-out infinite',
-          }}
-        />
-        <div
-          className="absolute w-[400px] h-[400px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(167,139,250,0.07), transparent 70%)',
-            bottom: '-10%', right: '-5%',
-            filter: 'blur(80px)',
-            animation: 'float-reverse 22s ease-in-out infinite',
-          }}
-        />
-      </div>
-      <div className="w-full max-w-md animate-fade-in relative z-10">
+    <div className="relative min-h-screen flex items-center justify-center p-4">
+      <AmbientBackground />
+      
+      <div className="relative z-10 w-full max-w-md space-y-6 animate-fade-in">
         {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-            style={{
-              background: 'var(--accent-dim)',
-              border: '1px solid var(--accent-glow)',
-              boxShadow: '0 0 30px var(--accent-glow)',
-            }}
-          >
-            <Brain className="w-7 h-7" style={{ color: 'var(--accent)' }} />
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/20 border border-primary/30 shadow-[0_0_40px_rgba(78,205,196,0.3)]">
+            <Brain className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-            ShifaMind
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Clinical Decision Support Platform
-          </p>
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">ShifaMind</h1>
+            <p className="text-foreground-muted text-sm mt-1">Clinical AI Diagnosis Platform</p>
+          </div>
         </div>
 
-        <GlassCard className="p-6 sm:p-8">
-          {magicSent ? (
-            <div className="text-center py-4">
-              <Mail className="w-10 h-10 mx-auto mb-4" style={{ color: 'var(--accent)' }} />
-              <h2 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Check your email</h2>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                We sent a magic link to <strong>{email}</strong>. Click it to sign in.
-              </p>
-              <button
-                onClick={() => { setMagicSent(false); setMode('password') }}
-                className="mt-6 text-sm underline"
-                style={{ color: 'var(--text-muted)' }}
+        {/* Login Card */}
+        <GlassCard className="relative overflow-hidden" glow="teal">
+          {/* Mode toggle */}
+          <div className="flex p-1 mb-6 bg-white/[0.04] rounded-xl">
+            <button
+              type="button"
+              onClick={() => { setMode("password"); setMagicLinkSent(false); }}
+              className={cn(
+                "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200",
+                mode === "password" 
+                  ? "bg-white/[0.08] text-foreground" 
+                  : "text-foreground-muted hover:text-foreground"
+              )}
+            >
+              Password
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode("magic-link"); setMagicLinkSent(false); }}
+              className={cn(
+                "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200",
+                mode === "magic-link" 
+                  ? "bg-white/[0.08] text-foreground" 
+                  : "text-foreground-muted hover:text-foreground"
+              )}
+            >
+              Magic Link
+            </button>
+          </div>
+
+          {magicLinkSent ? (
+            <div className="text-center py-6 space-y-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/20">
+                <Mail className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-medium text-foreground">Check your email</h2>
+                <p className="text-foreground-muted text-sm mt-1">
+                  We&apos;ve sent a magic link to <span className="text-foreground">{email}</span>
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() => setMagicLinkSent(false)}
+                className="text-foreground-muted hover:text-foreground"
               >
-                Back to sign in
-              </button>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to login
+              </Button>
             </div>
           ) : (
-            <>
-              <h2 className="text-lg font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>
-                {mode === 'password' ? 'Sign in to your account' : 'Sign in with magic link'}
-              </h2>
-
-              {error && (
-                <div
-                  className="mb-4 px-4 py-3 rounded-xl text-sm"
-                  style={{
-                    background: 'rgba(255, 107, 107, 0.1)',
-                    border: '1px solid rgba(255, 107, 107, 0.3)',
-                    color: 'var(--accent-warm)',
-                  }}
-                >
-                  {error}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Email field */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-foreground-muted">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-subtle" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="doctor@hospital.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="pl-10 bg-white/[0.04] border-white/[0.08] text-foreground placeholder:text-foreground-subtle focus:border-primary focus:ring-primary/20"
+                  />
                 </div>
-              )}
+              </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Email */}
-                <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                    Email address
-                  </label>
+              {/* Password field (only for password mode) */}
+              {mode === "password" && (
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-foreground-muted">Password</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-subtle" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       required
-                      placeholder="doctor@hospital.com"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all"
-                      style={{
-                        background: 'var(--glass-bg)',
-                        border: '1px solid var(--glass-border)',
-                        color: 'var(--text-primary)',
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = 'rgba(78, 205, 196, 0.5)'
-                        e.target.style.boxShadow = '0 0 0 1px rgba(78, 205, 196, 0.3)'
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = 'var(--glass-border)'
-                        e.target.style.boxShadow = 'none'
-                      }}
+                      className="pl-10 bg-white/[0.04] border-white/[0.08] text-foreground placeholder:text-foreground-subtle focus:border-primary focus:ring-primary/20"
                     />
                   </div>
                 </div>
+              )}
 
-                {/* Password */}
-                {mode === 'password' && (
-                  <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        placeholder="••••••••"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all"
-                        style={{
-                          background: 'var(--glass-bg)',
-                          border: '1px solid var(--glass-border)',
-                          color: 'var(--text-primary)',
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = 'rgba(78, 205, 196, 0.5)'
-                          e.target.style.boxShadow = '0 0 0 1px rgba(78, 205, 196, 0.3)'
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = 'var(--glass-border)'
-                          e.target.style.boxShadow = 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
+              {/* Submit button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-[0_0_20px_rgba(78,205,196,0.3)] hover:shadow-[0_0_30px_rgba(78,205,196,0.4)] transition-all duration-200"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    {mode === "password" ? "Signing in..." : "Sending link..."}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    {mode === "password" ? "Sign In" : "Send Magic Link"}
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
                 )}
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm
-                    transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
-                    hover:brightness-110 hover:shadow-[0_0_20px_rgba(78,205,196,0.3)] active:scale-[0.98]"
-                  style={{
-                    background: '#4ecdc4',
-                    color: '#060a13',
-                    boxShadow: '0 4px 20px rgba(78, 205, 196, 0.2)',
-                  }}
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      {mode === 'password' ? 'Sign in' : 'Send magic link'}
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
-
-              {/* Toggle mode */}
-              <div className="mt-5 text-center">
-                <button
-                  onClick={() => { setMode(mode === 'password' ? 'magic' : 'password'); setError(null) }}
-                  className="text-sm transition-colors"
-                  style={{ color: 'var(--text-muted)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
-                >
-                  {mode === 'password'
-                    ? 'Sign in with magic link instead'
-                    : 'Sign in with password instead'}
-                </button>
-              </div>
-            </>
+              </Button>
+            </form>
           )}
         </GlassCard>
 
-        {/* Demo credentials hint */}
-        <div
-          className="mt-4 px-4 py-3 rounded-xl text-center"
-          style={{
-            background: 'rgba(78,205,196,0.06)',
-            border: '1px solid rgba(78,205,196,0.15)',
-          }}
-        >
-          <p className="text-xs font-medium mb-1" style={{ color: 'var(--accent)' }}>
-            Demo credentials
-          </p>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            o.shaikh@shifamind.dev · ShifaMind2025!
-          </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            Works offline — demo mode with mock predictions
-          </p>
-        </div>
+        {/* Demo credentials card */}
+        <GlassCard padding="sm" className="border-primary/20">
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">Demo Access</p>
+              <p className="text-xs text-foreground-muted mt-0.5">
+                Use demo@shifamind.me / demo123 to explore
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDemoLogin}
+              className="shrink-0 text-primary hover:text-primary hover:bg-primary/10"
+            >
+              Use Demo
+            </Button>
+          </div>
+        </GlassCard>
 
-        {/* Back to main site */}
-        <div className="mt-6 text-center">
-          <a
-            href="https://shifamind.me"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs transition-colors"
-            style={{ color: 'var(--text-muted)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
-          >
-            <ExternalLink className="w-3 h-3" />
-            shifamind.me
-          </a>
-        </div>
+        {/* Back link */}
+        <p className="text-center text-sm text-foreground-muted">
+          <Link href="/" className="hover:text-foreground transition-colors inline-flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" />
+            Back to main site
+          </Link>
+        </p>
       </div>
     </div>
   )

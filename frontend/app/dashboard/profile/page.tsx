@@ -1,228 +1,189 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { User, Mail, Building2, Stethoscope, Key, Loader2, CheckCircle } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import { GlassCard } from '@/components/shared/GlassCard'
-import { useToast } from '@/components/shared/Toast'
+import { User, Mail, Building, Stethoscope, Shield, Activity, MessageSquare, Star, Zap, Key, Bell } from "lucide-react"
+import { GlassCard } from "@/components/ui/glass-card"
+import { StatsTrend } from "@/components/ui/stats-trend"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
-interface DoctorProfile {
-  id: string
-  full_name: string
-  specialty: string | null
-  institution: string | null
-  email: string
-  role: 'doctor' | 'admin'
-  created_at: string
-}
-
-interface Stats {
-  predictions: number
-  chats: number
-  reviews: number
-}
-
-const MOCK_PROFILE: DoctorProfile = {
-  id: 'demo',
-  full_name: 'Dr. Omar Shaikh',
-  specialty: 'Internal Medicine',
-  institution: 'ShifaMind Demo',
-  email: 'o.shaikh@shifamind.dev',
-  role: 'doctor',
-  created_at: '2025-01-15T00:00:00Z',
-}
-
-function StatCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="text-center p-4 rounded-xl" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
-      <p className="text-2xl font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{value}</p>
-      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{label}</p>
-    </div>
-  )
+// Mock user data
+const user = {
+  name: "Dr. Sarah Smith",
+  email: "sarah.smith@hospital.com",
+  initials: "SS",
+  specialty: "Internal Medicine",
+  institution: "City General Hospital",
+  role: "Physician",
+  licenseNumber: "MD-2847362",
+  memberSince: "January 2024",
+  lastLogin: "Today at 2:45 PM",
+  stats: {
+    predictions: 24,
+    chatSessions: 8,
+    reviews: 12,
+  },
+  subscriptionTier: "Pro",
+  features: [
+    { name: "Unlimited Predictions", icon: Zap },
+    { name: "Advanced Analytics", icon: Activity },
+    { name: "Priority Support", icon: Zap },
+  ]
 }
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<DoctorProfile | null>(null)
-  const [stats, setStats] = useState<Stats>({ predictions: 0, chats: 0, reviews: 0 })
-  const [loading, setLoading] = useState(true)
-  const [isDemo, setIsDemo] = useState(false)
-  const [magicLinkSent, setMagicLinkSent] = useState(false)
-  const [sendingLink, setSendingLink] = useState(false)
-  const { toast } = useToast()
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) throw new Error('No session')
-
-        const [profileRes, predRes, chatRes, reviewRes] = await Promise.all([
-          supabase.from('doctors').select('*').eq('id', user.id).single(),
-          supabase.from('predictions').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
-          supabase.from('chat_sessions').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
-          supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('doctor_id', user.id),
-        ])
-
-        if (profileRes.data) {
-          setProfile(profileRes.data as DoctorProfile)
-        } else {
-          setProfile(MOCK_PROFILE)
-          setIsDemo(true)
-        }
-        setStats({
-          predictions: predRes.count ?? 0,
-          chats: chatRes.count ?? 0,
-          reviews: reviewRes.count ?? 0,
-        })
-      } catch {
-        // Supabase not configured or user not authenticated — show demo profile
-        setProfile(MOCK_PROFILE)
-        setIsDemo(true)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [])
-
-  async function handleMagicLink() {
-    if (!profile?.email || isDemo) return
-    setSendingLink(true)
-    try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOtp({
-        email: profile.email,
-        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-      })
-      if (error) {
-        toast(error.message, 'error')
-      } else {
-        setMagicLinkSent(true)
-        toast('Magic link sent to your email', 'success')
-      }
-    } catch {
-      toast('Could not send magic link in demo mode', 'error')
-    } finally {
-      setSendingLink(false)
-    }
-  }
-
-  const initials = profile?.full_name
-    ?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() ?? 'DR'
-
-  const memberSince = profile
-    ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
-    : ''
-
-  if (loading) {
-    return (
-      <div className="max-w-2xl mx-auto px-2 sm:px-0 space-y-4">
-        {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-32 rounded-2xl" />)}
-      </div>
-    )
-  }
-
   return (
-    <div className="max-w-2xl mx-auto px-2 sm:px-0 space-y-5 animate-fade-in">
-      <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Profile</h1>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <h1 className="text-2xl font-semibold text-foreground">Profile</h1>
 
-      {/* Avatar + name */}
-      <GlassCard className="p-6">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0"
-            style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)', color: 'var(--accent)' }}
-          >
-            {initials}
+      {/* Avatar card */}
+      <GlassCard className="flex items-center gap-6">
+        <Avatar className="w-20 h-20 bg-primary/20 border-2 border-primary/30">
+          <AvatarFallback className="text-2xl font-semibold text-primary bg-transparent">
+            {user.initials}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-foreground">{user.name}</h2>
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gold/20 text-gold border border-gold/30">
+              Demo
+            </span>
           </div>
-          <div className="text-center sm:text-left">
-            <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-              {profile?.full_name}
-            </h2>
-            <div className="flex items-center justify-center sm:justify-start gap-3 mt-1 flex-wrap">
-              {profile?.role === 'admin' && (
-                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,107,107,0.15)', color: 'var(--accent-warm)', border: '1px solid rgba(255,107,107,0.2)' }}>
-                  Admin
-                </span>
-              )}
-              {isDemo && (
-                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}>
-                  Demo
-                </span>
-              )}
-              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Member since {memberSince}
-              </span>
-            </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+              {user.role}
+            </span>
+            <span className="text-sm text-foreground-muted">Member since {user.memberSince}</span>
           </div>
         </div>
       </GlassCard>
 
-      {/* Details */}
-      <GlassCard className="p-6">
-        <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>Details</h3>
+      {/* Details card */}
+      <GlassCard className="space-y-4">
+        <h3 className="font-medium text-foreground">Account Details</h3>
         <div className="space-y-3">
-          {[
-            { icon: Mail, label: 'Email', value: profile?.email },
-            { icon: Stethoscope, label: 'Specialty', value: profile?.specialty ?? '—' },
-            { icon: Building2, label: 'Institution', value: profile?.institution ?? '—' },
-            { icon: User, label: 'Role', value: profile?.role === 'admin' ? 'Administrator' : 'Doctor' },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex items-center gap-3">
-              <Icon className="w-4 h-4 shrink-0" style={{ color: 'var(--text-muted)' }} />
-              <span className="text-xs w-24 shrink-0" style={{ color: 'var(--text-secondary)' }}>{label}</span>
-              <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{value}</span>
-            </div>
-          ))}
-        </div>
-      </GlassCard>
-
-      {/* Stats */}
-      <GlassCard className="p-6">
-        <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>Activity</h3>
-        <div className="grid grid-cols-3 gap-3">
-          <StatCard label="Predictions" value={stats.predictions} />
-          <StatCard label="Chat sessions" value={stats.chats} />
-          <StatCard label="Reviews given" value={stats.reviews} />
-        </div>
-      </GlassCard>
-
-      {/* Security */}
-      <GlassCard className="p-6">
-        <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>Security</h3>
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <Key className="w-4 h-4 shrink-0" style={{ color: 'var(--text-muted)' }} />
-            <div>
-              <p className="text-sm" style={{ color: 'var(--text-primary)' }}>Password-less sign in</p>
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                {isDemo ? 'Not available in demo mode' : 'Send a magic link to your email to sign in without a password'}
-              </p>
-            </div>
+          <div className="flex items-center gap-3 py-2 border-b border-white/[0.06]">
+            <Mail className="w-4 h-4 text-foreground-subtle" />
+            <span className="text-sm text-foreground-muted w-24">Email</span>
+            <span className="text-sm text-foreground">{user.email}</span>
           </div>
-          {!isDemo && (
-            magicLinkSent ? (
-              <div className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--accent)' }}>
-                <CheckCircle className="w-4 h-4" />
-                Sent
-              </div>
-            ) : (
-              <button
-                onClick={handleMagicLink}
-                disabled={sendingLink}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
-                style={{
-                  background: 'var(--glass-bg)',
-                  border: '1px solid var(--glass-border)',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                {sendingLink ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send magic link'}
-              </button>
-            )
-          )}
+          <div className="flex items-center gap-3 py-2 border-b border-white/[0.06]">
+            <Stethoscope className="w-4 h-4 text-foreground-subtle" />
+            <span className="text-sm text-foreground-muted w-24">Specialty</span>
+            <span className="text-sm text-foreground">{user.specialty}</span>
+          </div>
+          <div className="flex items-center gap-3 py-2 border-b border-white/[0.06]">
+            <Building className="w-4 h-4 text-foreground-subtle" />
+            <span className="text-sm text-foreground-muted w-24">Institution</span>
+            <span className="text-sm text-foreground">{user.institution}</span>
+          </div>
+          <div className="flex items-center gap-3 py-2">
+            <Shield className="w-4 h-4 text-foreground-subtle" />
+            <span className="text-sm text-foreground-muted w-24">Role</span>
+            <span className="text-sm text-foreground">{user.role}</span>
+          </div>
         </div>
+      </GlassCard>
+
+      {/* Activity stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <StatsTrend
+          label="Predictions"
+          value={user.stats.predictions}
+          icon={<Activity className="w-5 h-5" />}
+          iconColor="teal"
+          variant="compact"
+        />
+        <StatsTrend
+          label="Chat Sessions"
+          value={user.stats.chatSessions}
+          icon={<MessageSquare className="w-5 h-5" />}
+          iconColor="gold"
+          variant="compact"
+        />
+        <StatsTrend
+          label="Reviews"
+          value={user.stats.reviews}
+          icon={<Star className="w-5 h-5" />}
+          iconColor="red"
+          variant="compact"
+        />
+      </div>
+
+      {/* Subscription & Features */}
+      <GlassCard className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium text-foreground">Subscription</h3>
+          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/30">
+            {user.subscriptionTier}
+          </span>
+        </div>
+        <p className="text-sm text-foreground-muted">
+          You have access to all Pro features. Renews on February 1, 2025.
+        </p>
+        <button className="px-4 py-2 rounded-lg bg-primary/20 border border-primary/30 text-sm text-primary hover:bg-primary/30 transition-colors">
+          Manage Subscription
+        </button>
+      </GlassCard>
+
+      {/* Security & Preferences */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <GlassCard className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Key className="w-5 h-5 text-primary" />
+            <h3 className="font-medium text-foreground">Security</h3>
+          </div>
+          <p className="text-sm text-foreground-muted">
+            Manage your authentication and security settings.
+          </p>
+          <button className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-sm text-foreground hover:bg-white/[0.1] transition-colors">
+            Update Password
+          </button>
+        </GlassCard>
+
+        <GlassCard className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Bell className="w-5 h-5 text-gold" />
+            <h3 className="font-medium text-foreground">Notifications</h3>
+          </div>
+          <p className="text-sm text-foreground-muted">
+            Control how ShifaMind contacts you.
+          </p>
+          <button className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-sm text-foreground hover:bg-white/[0.1] transition-colors">
+            Preferences
+          </button>
+        </GlassCard>
+      </div>
+
+      {/* Additional info */}
+      <GlassCard className="space-y-4">
+        <h3 className="font-medium text-foreground">Additional Information</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-white/[0.06]">
+            <span className="text-sm text-foreground-muted">Last Login</span>
+            <span className="text-sm text-foreground">{user.lastLogin}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-white/[0.06]">
+            <span className="text-sm text-foreground-muted">License #</span>
+            <span className="text-sm text-foreground font-mono">{user.licenseNumber}</span>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-sm text-foreground-muted">API Key</span>
+            <button className="text-xs px-2 py-1 rounded bg-white/[0.06] hover:bg-white/[0.1] transition-colors text-foreground">
+              Generate
+            </button>
+          </div>
+        </div>
+      </GlassCard>
+
+      {/* Danger Zone */}
+      <GlassCard className="space-y-4 border-l-4 border-l-destructive">
+        <h3 className="font-medium text-foreground">Danger Zone</h3>
+        <p className="text-sm text-foreground-muted">
+          These actions are permanent and cannot be undone.
+        </p>
+        <button className="px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/30 text-sm text-destructive hover:bg-destructive/30 transition-colors">
+          Delete Account
+        </button>
       </GlassCard>
     </div>
   )

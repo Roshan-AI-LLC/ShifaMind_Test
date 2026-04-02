@@ -1,244 +1,194 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { MessageSquare, Star, Zap } from 'lucide-react'
-import { GlassCard } from '@/components/shared/GlassCard'
-import { NoteInput } from '@/components/workspace/NoteInput'
-import { PredictionPanel } from '@/components/workspace/PredictionPanel'
-import { ConceptPanel } from '@/components/workspace/ConceptPanel'
-import { ConceptDiagnosisMap } from '@/components/workspace/ConceptDiagnosisMap'
-import { FeedbackWidget } from '@/components/workspace/FeedbackWidget'
-import { usePrediction } from '@/hooks/usePrediction'
-import { cn } from '@/lib/utils'
-import type { PredictResponse } from '@/types'
+import { useState } from "react"
+import { Zap, Clock, MessageSquare } from "lucide-react"
+import { GlassCard } from "@/components/ui/glass-card"
+import { NoteInput } from "@/components/workspace/note-input"
+import { PredictionsList } from "@/components/workspace/predictions-list"
+import { ConceptsTab } from "@/components/workspace/concepts-tab"
+import { AttributionTab } from "@/components/workspace/attribution-tab"
+import { FeedbackWidget } from "@/components/workspace/feedback-widget"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
-type ResultTab = 'diagnoses' | 'concepts' | 'attribution'
+// Mock predictions data
+const mockPredictions = [
+  {
+    rank: 1,
+    code: "E11.9",
+    description: "Type 2 diabetes mellitus without complications",
+    confidence: 0.96,
+    isActive: true,
+    concepts: [
+      { name: "elevated_fasting_glucose", score: 0.92 },
+      { name: "increased_thirst", score: 0.88 },
+      { name: "frequent_urination", score: 0.85 },
+    ],
+  },
+  {
+    rank: 2,
+    code: "E78.5",
+    description: "Lipidemia, unspecified",
+    confidence: 0.72,
+    isActive: true,
+    concepts: [
+      { name: "abnormal_lipid_profile", score: 0.78 },
+      { name: "metabolic_syndrome", score: 0.65 },
+    ],
+  },
+  {
+    rank: 3,
+    code: "I10",
+    description: "Essential (primary) hypertension",
+    confidence: 0.68,
+    isActive: false,
+    concepts: [
+      { name: "elevated_blood_pressure", score: 0.72 },
+    ],
+  },
+  {
+    rank: 4,
+    code: "R06.02",
+    description: "Tachypnea",
+    confidence: 0.54,
+    isActive: false,
+    concepts: [
+      { name: "rapid_breathing", score: 0.58 },
+    ],
+  },
+]
 
-function ResultSkeleton() {
-  return (
-    <div className="space-y-3 animate-pulse">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="skeleton h-16 rounded-xl" />
-      ))}
-    </div>
-  )
-}
+const mockConcepts = [
+  { name: "elevated_fasting_glucose", score: 0.92, active: true },
+  { name: "increased_thirst", score: 0.88, active: true },
+  { name: "frequent_urination", score: 0.85, active: true },
+  { name: "abnormal_lipid_profile", score: 0.78, active: true },
+  { name: "elevated_blood_pressure", score: 0.72, active: false },
+  { name: "metabolic_syndrome", score: 0.65, active: false },
+  { name: "rapid_breathing", score: 0.58, active: false },
+]
+
+const mockAttributions = [
+  {
+    diagnosisCode: "E11.9",
+    diagnosisName: "Type 2 diabetes mellitus",
+    concepts: ["elevated_fasting_glucose", "increased_thirst", "frequent_urination"],
+  },
+  {
+    diagnosisCode: "E78.5",
+    diagnosisName: "Lipidemia, unspecified",
+    concepts: ["abnormal_lipid_profile", "metabolic_syndrome"],
+  },
+  {
+    diagnosisCode: "I10",
+    diagnosisName: "Essential hypertension",
+    concepts: ["elevated_blood_pressure"],
+  },
+]
 
 export default function WorkspacePage() {
-  const { runPrediction, loading, error, result, isDemo } = usePrediction()
-  const [activeTab, setActiveTab] = useState<ResultTab>('diagnoses')
+  const [hasAnalyzed, setHasAnalyzed] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
-  const [selectedCode, setSelectedCode] = useState<string | null>(null)
-  const [selectedConcept, setSelectedConcept] = useState<string | null>(null)
+  const [selectedTab, setSelectedTab] = useState("diagnoses")
 
-  async function handleSubmit(text: string) {
-    setSelectedCode(null)
-    setSelectedConcept(null)
-    setActiveTab('diagnoses')
-    await runPrediction(text)
+  const handleAnalyze = (note: string) => {
+    setIsLoading(true)
+    setTimeout(() => {
+      setHasAnalyzed(true)
+      setIsLoading(false)
+    }, 1500)
   }
 
-  const TABS: { id: ResultTab; label: string }[] = [
-    { id: 'diagnoses', label: 'Diagnoses' },
-    { id: 'concepts', label: 'Concepts' },
-    { id: 'attribution', label: 'Attribution' },
-  ]
-
   return (
-    <div className="max-w-7xl mx-auto animate-fade-in">
-      {/* Responsive split pane: stacked on mobile, side-by-side on lg+ */}
-      <div
-        className="flex flex-col lg:flex-row gap-6"
-        style={{ minHeight: 'calc(100vh - 140px)' }}
-      >
-        {/* ── Left pane: Note input ── */}
-        <div className="w-full lg:w-[420px] lg:shrink-0">
-          <GlassCard className="p-6 h-full">
-            <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Clinical Note
-            </h2>
-            <NoteInput onSubmit={handleSubmit} loading={loading} />
-          </GlassCard>
-        </div>
-
-        {/* ── Right pane: Results ── */}
-        <div className="flex-1 min-w-0">
-          {!result && !loading && !error && (
-            <GlassCard className="h-full flex flex-col items-center justify-center p-12 text-center">
-              <div className="relative mb-5">
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(78,205,196,0.25), transparent 70%)',
-                    filter: 'blur(16px)',
-                    transform: 'scale(1.5)',
-                  }}
-                />
-                <div
-                  className="relative w-16 h-16 rounded-2xl flex items-center justify-center animate-pulse"
-                  style={{
-                    background: 'var(--accent-dim)',
-                    border: '1px solid var(--accent-glow)',
-                    boxShadow: '0 0 30px rgba(78,205,196,0.2)',
-                  }}
-                >
-                  <Zap className="w-7 h-7" style={{ color: 'var(--accent)' }} />
-                </div>
-              </div>
-              <h3 className="font-semibold mb-2 gradient-text text-lg">
-                Ready to analyze
-              </h3>
-              <p className="text-sm max-w-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Choose a sample note or paste a clinical note on the left, then click
-                &ldquo;Analyze with ShifaMind&rdquo; to see Phase 1 predictions.
-              </p>
-            </GlassCard>
-          )}
-
-          {loading && (
-            <GlassCard className="p-6 h-full">
-              <div className="mb-4">
-                <div className="skeleton h-5 w-32 rounded mb-3" />
-                <div className="flex gap-3 mb-4">
-                  {[0, 1, 2].map(i => <div key={i} className="skeleton h-8 w-24 rounded-xl" />)}
-                </div>
-              </div>
-              <ResultSkeleton />
-            </GlassCard>
-          )}
-
-          {error && !loading && (
-            <GlassCard className="p-6 flex flex-col items-center justify-center text-center h-full">
-              <p className="text-sm mb-2 font-medium" style={{ color: 'var(--accent-warm)' }}>
-                Prediction failed
-              </p>
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{error}</p>
-            </GlassCard>
-          )}
-
-          {result && !loading && (
-            <GlassCard className="p-6 flex flex-col h-full animate-fade-in">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-2">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                    Prediction Results
-                  </h2>
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full font-mono"
-                    style={{ background: 'var(--glass-bg)', color: 'var(--text-muted)' }}
-                  >
-                    {result.metadata.inference_time_ms}ms
-                  </span>
-                  <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-muted)' }}>
-                    {result.predictions.filter(p => p.above_threshold).length} active
-                    {' · '}
-                    {result.activated_concepts.filter(c => c.active).length} concepts
-                  </span>
-                  {isDemo && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full"
-                      style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}
-                    >
-                      Demo
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {result.prediction_id && !isDemo && (
-                    <button
-                      onClick={() => setShowFeedback(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-colors"
-                      style={{
-                        background: 'rgba(255,217,61,0.1)',
-                        color: 'var(--accent-gold)',
-                        border: '1px solid rgba(255,217,61,0.2)',
-                      }}
-                    >
-                      <Star className="w-3.5 h-3.5" />
-                      Rate
-                    </button>
-                  )}
-                  {(result.prediction_id || isDemo) && (
-                    <Link
-                      href={isDemo ? '/dashboard/chat?demo=true' : `/dashboard/chat?prediction_id=${result.prediction_id}`}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all"
-                      style={{
-                        background: 'var(--accent-dim)',
-                        color: 'var(--accent)',
-                        border: '1px solid rgba(78,205,196,0.2)',
-                      }}
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      Discuss →
-                    </Link>
-                  )}
-                </div>
-              </div>
-
-              {/* Tabs */}
-              <div
-                className="flex gap-1 p-1 rounded-xl mb-4 shrink-0 overflow-x-auto"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
-              >
-                {TABS.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      'flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all duration-200 whitespace-nowrap',
-                      activeTab === tab.id
-                        ? 'shadow-sm'
-                        : 'text-white/40 hover:text-white/60 hover:bg-white/[0.04]'
-                    )}
-                    style={activeTab === tab.id ? {
-                      background: 'rgba(78,205,196,0.12)',
-                      color: 'var(--accent)',
-                      border: '1px solid rgba(78,205,196,0.2)',
-                    } : undefined}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab content */}
-              <div className="flex-1 overflow-y-auto">
-                {activeTab === 'diagnoses' && (
-                  <PredictionPanel
-                    predictions={result.predictions}
-                    activatedConcepts={result.activated_concepts}
-                    selectedCode={selectedCode}
-                    onSelectCode={setSelectedCode}
-                  />
-                )}
-                {activeTab === 'concepts' && (
-                  <ConceptPanel
-                    concepts={result.activated_concepts}
-                    selectedConcept={selectedConcept}
-                    onSelectConcept={setSelectedConcept}
-                  />
-                )}
-                {activeTab === 'attribution' && (
-                  <ConceptDiagnosisMap
-                    predictions={result.predictions}
-                    concepts={result.activated_concepts}
-                  />
-                )}
-              </div>
-            </GlassCard>
-          )}
-        </div>
+    <div className="max-w-7xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold text-foreground">Workspace</h1>
+        <p className="text-foreground-muted mt-1">Analyze clinical notes with AI-powered ICD-10 predictions</p>
       </div>
 
-      {/* Feedback modal */}
-      {showFeedback && result?.prediction_id && (
-        <FeedbackWidget
-          predictionId={result.prediction_id}
-          onClose={() => setShowFeedback(false)}
-        />
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6">
+        {/* Note Input Panel */}
+        <NoteInput onAnalyze={handleAnalyze} />
+
+        {/* Results Panel */}
+        {!hasAnalyzed && !isLoading ? (
+          <GlassCard className="flex flex-col items-center justify-center min-h-[600px]">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-2xl rounded-full" />
+              <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
+                <Zap className="w-8 h-8 text-primary" />
+              </div>
+            </div>
+            <h3 className="text-foreground font-medium mt-6">Ready to Analyze</h3>
+            <p className="text-foreground-muted text-sm mt-1">Enter a clinical note to get started</p>
+          </GlassCard>
+        ) : isLoading ? (
+          <GlassCard className="flex flex-col items-center justify-center min-h-[600px]">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-2xl rounded-full animate-pulse" />
+              <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            </div>
+            <h3 className="text-foreground font-medium mt-6">Analyzing Note</h3>
+            <p className="text-foreground-muted text-sm mt-1">Training BioClinicalBERT on your input...</p>
+          </GlassCard>
+        ) : (
+          <GlassCard className="space-y-6">
+            {/* Results Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-white/[0.06]">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-1 rounded text-xs font-semibold bg-primary/20 text-primary">
+                    Demo
+                  </span>
+                  <span className="text-xs text-foreground-muted flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    324ms inference
+                  </span>
+                </div>
+                <h3 className="font-semibold text-foreground">
+                  {mockPredictions.filter(p => p.isActive).length} Active Diagnoses
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowFeedback(true)}
+                className="px-4 py-2 rounded-lg bg-gold/20 border border-gold/30 text-sm text-gold hover:bg-gold/30 transition-colors font-medium"
+              >
+                Rate Prediction
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="diagnoses">Diagnoses</TabsTrigger>
+                <TabsTrigger value="concepts">Concepts</TabsTrigger>
+                <TabsTrigger value="attribution">Attribution</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="diagnoses" className="space-y-3">
+                <PredictionsList predictions={mockPredictions} />
+                <button className="w-full px-4 py-3 rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground hover:bg-white/[0.1] transition-colors flex items-center justify-center gap-2 mt-4">
+                  <MessageSquare className="w-4 h-4" />
+                  Discuss in Chat →
+                </button>
+              </TabsContent>
+
+              <TabsContent value="concepts">
+                <ConceptsTab concepts={mockConcepts} />
+              </TabsContent>
+
+              <TabsContent value="attribution">
+                <AttributionTab attributions={mockAttributions} />
+              </TabsContent>
+            </Tabs>
+          </GlassCard>
+        )}
+      </div>
+
+      {/* Feedback Modal */}
+      {showFeedback && <FeedbackWidget onClose={() => setShowFeedback(false)} />}
     </div>
   )
 }

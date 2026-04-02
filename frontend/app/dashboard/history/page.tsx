@@ -1,249 +1,146 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { History, MessageSquare, ChevronDown, ChevronUp, FlaskConical } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import { GlassCard } from '@/components/shared/GlassCard'
-import { ConfidenceBar } from '@/components/shared/ConfidenceBar'
-import { ConceptBadge } from '@/components/shared/ConceptBadge'
-import { MOCK_SCENARIOS, MOCK_NOTES } from '@/lib/mock-data'
+import { useState } from "react"
+import { Filter, Download } from "lucide-react"
+import { GlassCard } from "@/components/ui/glass-card"
+import { HistoryCard } from "@/components/ui/history-card"
 
-interface PredictionRow {
-  id: string
-  note_source: 'sample' | 'custom'
-  input_text: string
-  predicted_codes: Array<{
-    rank: number; code: string; description: string
-    confidence: number; above_threshold: boolean
-  }>
-  activated_concepts: Array<{ concept: string; score: number; active: boolean }>
-  inference_time_ms: number
-  created_at: string
-}
-
-// Demo fallback — one entry per sample note, spread over the past week
-const SCENARIO_KEYS = ['heart_failure', 'pneumonia', 'aki', 'sepsis', 'stroke'] as const
-const MOCK_HISTORY: PredictionRow[] = MOCK_NOTES.map((note, i) => {
-  const scenario = MOCK_SCENARIOS[SCENARIO_KEYS[i]]
-  const daysAgo = i * 1.5
-  return {
-    id: `demo-${note.id}`,
-    note_source: 'sample',
-    input_text: note.text,
-    predicted_codes: scenario.predictions,
-    activated_concepts: scenario.activated_concepts,
-    inference_time_ms: scenario.metadata.inference_time_ms,
-    created_at: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString(),
-  }
-})
-
-function PredictionCard({ prediction, isDemo }: { prediction: PredictionRow; isDemo: boolean }) {
-  const [expanded, setExpanded] = useState(false)
-  const codes = Array.isArray(prediction.predicted_codes) ? prediction.predicted_codes : []
-  const concepts = Array.isArray(prediction.activated_concepts) ? prediction.activated_concepts : []
-  const top = codes.filter(p => p.above_threshold).slice(0, 3)
-  const topConcepts = concepts.filter(c => c.active).slice(0, 6)
-  const date = new Date(prediction.created_at)
-
-  return (
-    <GlassCard className="overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-start gap-4 p-4 hover:bg-white/[0.02] transition-colors text-left"
-      >
-        {/* Icon */}
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-          style={{ background: 'var(--accent-dim)' }}
-        >
-          <FlaskConical className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Top codes pills */}
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {top.map(p => (
-              <span
-                key={p.code}
-                className="font-mono text-xs px-2 py-0.5 rounded-full"
-                style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}
-              >
-                {p.code}
-              </span>
-            ))}
-            {codes.filter(p => p.above_threshold).length > 3 && (
-              <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--glass-bg)', color: 'var(--text-muted)' }}>
-                +{codes.filter(p => p.above_threshold).length - 3} more
-              </span>
-            )}
-          </div>
-          {/* Note snippet */}
-          <p className="text-xs leading-relaxed line-clamp-2 mb-2" style={{ color: 'var(--text-secondary)' }}>
-            {prediction.input_text.slice(0, 180)}…
-          </p>
-          {/* Meta */}
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              {date.toLocaleDateString()} {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-            <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
-              {prediction.inference_time_ms}ms
-            </span>
-            <span
-              className="text-xs px-1.5 py-0.5 rounded-md"
-              style={{ background: 'var(--glass-bg)', color: 'var(--text-muted)' }}
-            >
-              {prediction.note_source}
-            </span>
-          </div>
-        </div>
-
-        {/* Actions + expand */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {!isDemo && (
-            <Link
-              href={`/dashboard/chat?prediction_id=${prediction.id}`}
-              onClick={e => e.stopPropagation()}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs transition-colors"
-              style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
-            >
-              <MessageSquare className="w-3 h-3" />
-              Chat
-            </Link>
-          )}
-          {expanded
-            ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
-            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
-          }
-        </div>
-      </button>
-
-      {/* Expanded detail */}
-      {expanded && (
-        <div className="px-4 pb-4 border-t space-y-4" style={{ borderColor: 'var(--glass-border)' }}>
-          {/* Top diagnoses */}
-          <div className="pt-4">
-            <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-              Top diagnoses
-            </p>
-            <div className="space-y-2">
-              {codes.filter(p => p.above_threshold).slice(0, 6).map(p => (
-                <div key={p.code} className="flex items-center gap-3">
-                  <span className="font-mono text-xs w-16 shrink-0" style={{ color: 'var(--accent)' }}>{p.code}</span>
-                  <span className="text-xs flex-1 truncate" style={{ color: 'var(--text-primary)' }}>{p.description}</span>
-                  <div className="w-16 sm:w-24 shrink-0"><ConfidenceBar value={p.confidence} /></div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Active concepts */}
-          {topConcepts.length > 0 && (
-            <div>
-              <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                Activated concepts
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {topConcepts.map(c => (
-                  <ConceptBadge key={c.concept} concept={c.concept} score={c.score} />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </GlassCard>
-  )
-}
-
-function HistorySkeleton() {
-  return (
-    <div className="space-y-3">
-      {[...Array(4)].map((_, i) => (
-        <div key={i} className="skeleton h-24 rounded-2xl" />
-      ))}
-    </div>
-  )
-}
+// Mock prediction history data
+const predictions = [
+  {
+    id: "pred-001",
+    date: "2024-01-15 10:32 AM",
+    diagnosis: "Type 2 Diabetes Mellitus",
+    content: "58-year-old male with persistent elevated fasting glucose levels (142 mg/dL), BMI 28, family history of diabetes. Patient reports increased thirst and frequent urination over past 3 weeks.",
+    codes: [
+      { code: "E11.9", label: "Type 2 diabetes mellitus without complications", confidence: 0.96 },
+      { code: "R06.02", label: "Tachypnea", confidence: 0.72 },
+      { code: "E78.5", label: "Lipidemia, unspecified", confidence: 0.68 },
+    ],
+    userFeedback: "helpful",
+  },
+  {
+    id: "pred-002",
+    date: "2024-01-14 2:15 PM",
+    diagnosis: "Hypertensive Crisis",
+    content: "45-year-old female presenting with severe headache, dizziness, and BP 180/120. No prior history of hypertension. Symptomatic and requires immediate intervention.",
+    codes: [
+      { code: "I10", label: "Essential (primary) hypertension", confidence: 0.88 },
+      { code: "R51.9", label: "Headache, unspecified", confidence: 0.91 },
+      { code: "R25.1", label: "Tremor, unspecified", confidence: 0.54 },
+    ],
+    userFeedback: "helpful",
+  },
+  {
+    id: "pred-003",
+    date: "2024-01-13 9:45 AM",
+    diagnosis: "Acute Bronchitis with Productive Cough",
+    content: "32-year-old male with 5-day history of productive cough with greenish sputum, fever, and chest discomfort. Recent upper respiratory infection. No shortness of breath.",
+    codes: [
+      { code: "J20.9", label: "Acute bronchitis, unspecified", confidence: 0.93 },
+      { code: "R05.9", label: "Fever, unspecified", confidence: 0.79 },
+      { code: "R06.02", label: "Tachypnea", confidence: 0.65 },
+    ],
+  },
+  {
+    id: "pred-004",
+    date: "2024-01-12 11:20 AM",
+    diagnosis: "Gastroesophageal Reflux Disease",
+    content: "52-year-old female with chronic heartburn, regurgitation after meals, and mild dysphagia. Symptoms worse at night. Tried over-the-counter antacids with minimal relief.",
+    codes: [
+      { code: "K21.9", label: "Unspecified esophagitis", confidence: 0.85 },
+      { code: "R12", label: "Heartburn", confidence: 0.94 },
+      { code: "K22.70", label: "Barrett's esophagus without dysplasia", confidence: 0.41 },
+    ],
+    userFeedback: "partial",
+  },
+  {
+    id: "pred-005",
+    date: "2024-01-11 3:00 PM",
+    diagnosis: "Acute Sinusitis",
+    content: "28-year-old male with nasal congestion, facial pain, and purulent nasal discharge. Recent viral URI. No fever or systemic symptoms.",
+    codes: [
+      { code: "J01.90", label: "Unspecified acute sinusitis", confidence: 0.87 },
+      { code: "R06.02", label: "Nasal congestion", confidence: 0.81 },
+      { code: "M79.7", label: "Fibromyalgia", confidence: 0.38 },
+    ],
+    userFeedback: "incorrect",
+  },
+]
 
 export default function HistoryPage() {
-  const [predictions, setPredictions] = useState<PredictionRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [hasMore, setHasMore] = useState(false)
-  const [isDemo, setIsDemo] = useState(false)
-  const PAGE = 20
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [filterFeedback, setFilterFeedback] = useState<"all" | "helpful" | "partial" | "incorrect">("all")
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const supabase = createClient()
-        const { data, error } = await supabase
-          .from('predictions')
-          .select('id,note_source,input_text,predicted_codes,activated_concepts,inference_time_ms,created_at')
-          .order('created_at', { ascending: false })
-          .limit(PAGE + 1)
+  const filteredPredictions = filterFeedback === "all" 
+    ? predictions 
+    : predictions.filter(p => p.userFeedback === filterFeedback || (filterFeedback === "helpful" && !p.userFeedback))
 
-        if (error) throw error
-        const rows = data ?? []
-        setHasMore(rows.length > PAGE)
-        setPredictions(rows.slice(0, PAGE) as PredictionRow[])
-      } catch {
-        // Supabase not configured — fall back to demo history
-        setPredictions(MOCK_HISTORY)
-        setIsDemo(true)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [])
+  const handleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id)
+  }
 
   return (
-    <div className="max-w-3xl mx-auto px-2 sm:px-0 animate-fade-in">
-      <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>History</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-            Your past predictions and analyses
-          </p>
+          <h1 className="text-2xl font-semibold text-foreground">Prediction History</h1>
+          <p className="text-foreground-muted mt-1">Review your past analyses and predictions</p>
         </div>
-        <div className="flex items-center gap-2">
-          {isDemo && (
-            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,217,61,0.1)', color: 'var(--accent-gold)' }}>
-              Demo
-            </span>
-          )}
-          {predictions.length > 0 && (
-            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              {predictions.length}{hasMore ? '+' : ''} predictions
-            </span>
-          )}
-        </div>
+        <span className="px-3 py-1 rounded-full text-sm font-medium bg-white/[0.06] text-foreground-muted w-fit">
+          {predictions.length} predictions
+        </span>
       </div>
 
-      {loading && <HistorySkeleton />}
-      {!loading && predictions.length > 0 && (
-        <div className="space-y-3">
-          {predictions.map((p, i) => (
-            <div
-              key={p.id}
-              className="animate-fade-in"
-              style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'backwards' }}
-            >
-              <PredictionCard prediction={p} isDemo={isDemo} />
-            </div>
-          ))}
-          {hasMore && (
-            <p className="text-center text-xs py-2" style={{ color: 'var(--text-muted)' }}>
-              Showing latest {PAGE} predictions
-            </p>
-          )}
+      {/* Filter and actions */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-foreground-muted" />
+          <div className="flex gap-2">
+            {["all", "helpful", "partial", "incorrect"].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setFilterFeedback(filter as any)}
+                className={`px-3 py-1.5 text-xs rounded-lg font-medium transition-colors ${
+                  filterFeedback === filter
+                    ? "bg-primary/20 text-primary border border-primary/30"
+                    : "bg-white/[0.06] text-foreground hover:bg-white/[0.1] border border-white/[0.08]"
+                }`}
+              >
+                {filter.charAt(0).toUpperCase() + filter.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
+        <button className="ml-auto hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground hover:bg-white/[0.1] transition-colors">
+          <Download className="w-4 h-4" />
+          Export
+        </button>
+      </div>
+
+      {/* History cards */}
+      <div className="space-y-3">
+        {filteredPredictions.map((prediction, index) => (
+          <div key={prediction.id} className={`animate-fade-in stagger-${index + 1}`}>
+            <HistoryCard
+              {...prediction}
+              onExpand={handleExpand}
+              isExpanded={expandedId === prediction.id}
+            />
+          </div>
+        ))}
+      </div>
+
+      {filteredPredictions.length === 0 && (
+        <GlassCard className="flex flex-col items-center justify-center py-16">
+          <div className="w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
+            <Filter className="w-8 h-8 text-foreground-subtle" />
+          </div>
+          <h2 className="text-lg font-medium text-foreground mt-6">No predictions found</h2>
+          <p className="text-foreground-muted text-sm mt-1 text-center max-w-sm">
+            Try adjusting your filters to see more results.
+          </p>
+        </GlassCard>
       )}
     </div>
   )
