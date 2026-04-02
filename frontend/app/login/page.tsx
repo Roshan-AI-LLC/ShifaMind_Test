@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase"
 
 type AuthMode = "password" | "magic-link"
 
@@ -20,32 +21,47 @@ export default function LoginPage() {
   const [password, setPassword] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
   const [magicLinkSent, setMagicLinkSent] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const supabase = createClient()
 
     if (mode === "magic-link") {
-      setMagicLinkSent(true)
-      setIsLoading(false)
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      })
+      if (error) {
+        setError(error.message)
+      } else {
+        setMagicLinkSent(true)
+      }
     } else {
-      // For demo, just redirect to dashboard
-      router.push("/dashboard")
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError(error.message)
+      } else {
+        router.push("/dashboard")
+        router.refresh()
+      }
     }
+
+    setIsLoading(false)
   }
 
   const handleDemoLogin = () => {
     setEmail("demo@shifamind.me")
-    setPassword("demo123")
+    setPassword("ShifaMind2025!")
   }
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-4">
       <AmbientBackground />
-      
+
       <div className="relative z-10 w-full max-w-md space-y-6 animate-fade-in">
         {/* Logo */}
         <div className="text-center space-y-3">
@@ -64,11 +80,11 @@ export default function LoginPage() {
           <div className="flex p-1 mb-6 bg-white/[0.04] rounded-xl">
             <button
               type="button"
-              onClick={() => { setMode("password"); setMagicLinkSent(false); }}
+              onClick={() => { setMode("password"); setMagicLinkSent(false); setError(null) }}
               className={cn(
                 "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200",
-                mode === "password" 
-                  ? "bg-white/[0.08] text-foreground" 
+                mode === "password"
+                  ? "bg-white/[0.08] text-foreground"
                   : "text-foreground-muted hover:text-foreground"
               )}
             >
@@ -76,11 +92,11 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => { setMode("magic-link"); setMagicLinkSent(false); }}
+              onClick={() => { setMode("magic-link"); setMagicLinkSent(false); setError(null) }}
               className={cn(
                 "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200",
-                mode === "magic-link" 
-                  ? "bg-white/[0.08] text-foreground" 
+                mode === "magic-link"
+                  ? "bg-white/[0.08] text-foreground"
                   : "text-foreground-muted hover:text-foreground"
               )}
             >
@@ -110,6 +126,13 @@ export default function LoginPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Error message */}
+              {error && (
+                <div className="px-4 py-3 rounded-lg bg-destructive/10 border border-destructive/30 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+
               {/* Email field */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-foreground-muted">Email</Label>
@@ -177,7 +200,7 @@ export default function LoginPage() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">Demo Access</p>
               <p className="text-xs text-foreground-muted mt-0.5">
-                Use demo@shifamind.me / demo123 to explore
+                Use demo@shifamind.me to explore
               </p>
             </div>
             <Button

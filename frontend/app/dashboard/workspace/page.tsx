@@ -9,95 +9,87 @@ import { ConceptsTab } from "@/components/workspace/concepts-tab"
 import { AttributionTab } from "@/components/workspace/attribution-tab"
 import { FeedbackWidget } from "@/components/workspace/feedback-widget"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { useAuth } from "@/hooks/use-auth"
+import { predict, submitReview, type PredictResponse } from "@/lib/api"
 
-// Mock predictions data
-const mockPredictions = [
-  {
-    rank: 1,
-    code: "E11.9",
-    description: "Type 2 diabetes mellitus without complications",
-    confidence: 0.96,
-    isActive: true,
-    concepts: [
-      { name: "elevated_fasting_glucose", score: 0.92 },
-      { name: "increased_thirst", score: 0.88 },
-      { name: "frequent_urination", score: 0.85 },
-    ],
-  },
-  {
-    rank: 2,
-    code: "E78.5",
-    description: "Lipidemia, unspecified",
-    confidence: 0.72,
-    isActive: true,
-    concepts: [
-      { name: "abnormal_lipid_profile", score: 0.78 },
-      { name: "metabolic_syndrome", score: 0.65 },
-    ],
-  },
-  {
-    rank: 3,
-    code: "I10",
-    description: "Essential (primary) hypertension",
-    confidence: 0.68,
-    isActive: false,
-    concepts: [
-      { name: "elevated_blood_pressure", score: 0.72 },
-    ],
-  },
-  {
-    rank: 4,
-    code: "R06.02",
-    description: "Tachypnea",
-    confidence: 0.54,
-    isActive: false,
-    concepts: [
-      { name: "rapid_breathing", score: 0.58 },
-    ],
-  },
-]
+// ── Shape adapters ─────────────────────────────────────────────────────────
 
-const mockConcepts = [
-  { name: "elevated_fasting_glucose", score: 0.92, active: true },
-  { name: "increased_thirst", score: 0.88, active: true },
-  { name: "frequent_urination", score: 0.85, active: true },
-  { name: "abnormal_lipid_profile", score: 0.78, active: true },
-  { name: "elevated_blood_pressure", score: 0.72, active: false },
-  { name: "metabolic_syndrome", score: 0.65, active: false },
-  { name: "rapid_breathing", score: 0.58, active: false },
-]
+function toPredictionsList(data: PredictResponse) {
+  return data.predictions.map((p) => ({
+    rank: p.rank,
+    code: p.code,
+    description: p.description,
+    confidence: p.confidence,
+    isActive: p.above_threshold,
+    concepts: data.activated_concepts
+      .filter((c) => c.active)
+      .slice(0, 3)
+      .map((c) => ({ name: c.concept, score: c.score })),
+  }))
+}
 
-const mockAttributions = [
-  {
-    diagnosisCode: "E11.9",
-    diagnosisName: "Type 2 diabetes mellitus",
-    concepts: ["elevated_fasting_glucose", "increased_thirst", "frequent_urination"],
-  },
-  {
-    diagnosisCode: "E78.5",
-    diagnosisName: "Lipidemia, unspecified",
-    concepts: ["abnormal_lipid_profile", "metabolic_syndrome"],
-  },
-  {
-    diagnosisCode: "I10",
-    diagnosisName: "Essential hypertension",
-    concepts: ["elevated_blood_pressure"],
-  },
-]
+function toConceptsList(data: PredictResponse) {
+  return data.activated_concepts.map((c) => ({
+    name: c.concept,
+    score: c.score,
+    active: c.active,
+  }))
+}
+
+function toAttributions(data: PredictResponse) {
+  const activeConcepts = data.activated_concepts.filter((c) => c.active).map((c) => c.concept)
+  return data.predictions
+    .filter((p) => p.above_threshold)
+    .map((p) => ({
+      diagnosisCode: p.code,
+      diagnosisName: p.description,
+      concepts: activeConcepts.slice(0, 3),
+    }))
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────
 
 export default function WorkspacePage() {
-  const [hasAnalyzed, setHasAnalyzed] = useState(false)
+  const { session } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
+  const [result, setResult] = useState<PredictResponse | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
   const [selectedTab, setSelectedTab] = useState("diagnoses")
 
-  const handleAnalyze = (note: string) => {
+  const handleAnalyze = async (note: string) => {
     setIsLoading(true)
-    setTimeout(() => {
-      setHasAnalyzed(true)
+    setErrorMsg(null)
+    try {
+      const token = session?.access_token
+      if (!token) throw new Error("Not authenticated")
+      const data = await predict(note, token)
+      setResult(data)
+    } catch (err: any) {
+      setErrorMsg(err.message ?? "Prediction failed")
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
+
+  const handleSubmitReview = async (
+    rating: number,
+    accuracyRating: number,
+    interpretabilityRating: number,
+    comment: string
+  ) => {
+    if (!result?.prediction_id || !session?.access_token) return
+    await submitReview(result.prediction_id, rating, session.access_token, {
+      accuracyRating,
+      interpretabilityRating,
+      comment,
+    })
+  }
+
+  const predictions = result ? toPredictionsList(result) : []
+  const concepts = result ? toConceptsList(result) : []
+  const attributions = result ? toAttributions(result) : []
+  const activeDiagnoses = predictions.filter((p) => p.isActive).length
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -111,7 +103,23 @@ export default function WorkspacePage() {
         <NoteInput onAnalyze={handleAnalyze} />
 
         {/* Results Panel */}
-        {!hasAnalyzed && !isLoading ? (
+        {errorMsg ? (
+          <GlassCard className="flex flex-col items-center justify-center min-h-[600px]">
+            <div className="text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-destructive/20 flex items-center justify-center mx-auto">
+                <Zap className="w-8 h-8 text-destructive" />
+              </div>
+              <h3 className="text-foreground font-medium">Prediction Failed</h3>
+              <p className="text-foreground-muted text-sm max-w-xs">{errorMsg}</p>
+              <button
+                onClick={() => setErrorMsg(null)}
+                className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-sm text-foreground hover:bg-white/[0.1] transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </GlassCard>
+        ) : !result && !isLoading ? (
           <GlassCard className="flex flex-col items-center justify-center min-h-[600px]">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-2xl rounded-full" />
@@ -131,7 +139,7 @@ export default function WorkspacePage() {
               </div>
             </div>
             <h3 className="text-foreground font-medium mt-6">Analyzing Note</h3>
-            <p className="text-foreground-muted text-sm mt-1">Training BioClinicalBERT on your input...</p>
+            <p className="text-foreground-muted text-sm mt-1">Running BioClinicalBERT inference...</p>
           </GlassCard>
         ) : (
           <GlassCard className="space-y-6">
@@ -140,15 +148,15 @@ export default function WorkspacePage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="px-2 py-1 rounded text-xs font-semibold bg-primary/20 text-primary">
-                    Demo
+                    Live
                   </span>
                   <span className="text-xs text-foreground-muted flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    324ms inference
+                    {result?.metadata.inference_time_ms}ms inference
                   </span>
                 </div>
                 <h3 className="font-semibold text-foreground">
-                  {mockPredictions.filter(p => p.isActive).length} Active Diagnoses
+                  {activeDiagnoses} Active {activeDiagnoses === 1 ? "Diagnosis" : "Diagnoses"}
                 </h3>
               </div>
               <button
@@ -168,7 +176,7 @@ export default function WorkspacePage() {
               </TabsList>
 
               <TabsContent value="diagnoses" className="space-y-3">
-                <PredictionsList predictions={mockPredictions} />
+                <PredictionsList predictions={predictions} />
                 <button className="w-full px-4 py-3 rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground hover:bg-white/[0.1] transition-colors flex items-center justify-center gap-2 mt-4">
                   <MessageSquare className="w-4 h-4" />
                   Discuss in Chat →
@@ -176,11 +184,11 @@ export default function WorkspacePage() {
               </TabsContent>
 
               <TabsContent value="concepts">
-                <ConceptsTab concepts={mockConcepts} />
+                <ConceptsTab concepts={concepts} />
               </TabsContent>
 
               <TabsContent value="attribution">
-                <AttributionTab attributions={mockAttributions} />
+                <AttributionTab attributions={attributions} />
               </TabsContent>
             </Tabs>
           </GlassCard>
@@ -188,7 +196,12 @@ export default function WorkspacePage() {
       </div>
 
       {/* Feedback Modal */}
-      {showFeedback && <FeedbackWidget onClose={() => setShowFeedback(false)} />}
+      {showFeedback && (
+        <FeedbackWidget
+          onClose={() => setShowFeedback(false)}
+          onSubmit={handleSubmitReview}
+        />
+      )}
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Sidebar } from "./sidebar"
 import { Header } from "./header"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase"
 
 interface AppShellProps {
   children: React.ReactNode
@@ -28,9 +29,11 @@ export function AppShell({
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
 
-  const handleSignOut = () => {
-    // For now, just redirect to login
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
     router.push("/login")
+    router.refresh()
   }
 
   return (
