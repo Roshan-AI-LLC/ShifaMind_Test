@@ -6,9 +6,15 @@ import { GlassCard } from "@/components/ui/glass-card"
 
 interface FeedbackWidgetProps {
   onClose: () => void
+  onSubmit?: (
+    rating: number,
+    accuracyRating: number,
+    interpretabilityRating: number,
+    comment: string
+  ) => Promise<void>
 }
 
-export function FeedbackWidget({ onClose }: FeedbackWidgetProps) {
+export function FeedbackWidget({ onClose, onSubmit }: FeedbackWidgetProps) {
   const [overallRating, setOverallRating] = useState(0)
   const [accuracyRating, setAccuracyRating] = useState(0)
   const [interpretabilityRating, setInterpretabilityRating] = useState(0)
@@ -17,7 +23,13 @@ export function FeedbackWidget({ onClose }: FeedbackWidgetProps) {
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      if (onSubmit) {
+        await onSubmit(overallRating, accuracyRating, interpretabilityRating, comment)
+      }
+    } catch {
+      // submission errors are non-fatal
+    }
     onClose()
     setIsSubmitting(false)
   }

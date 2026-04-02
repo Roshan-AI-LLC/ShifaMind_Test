@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Brain, MessageSquare, Menu, X } from "lucide-react"
-import { GlassCard } from "@/components/ui/glass-card"
 import { ChatMessage } from "@/components/chat/chat-message"
 import { ChatInput } from "@/components/chat/chat-input"
 import { ContextSidebar } from "@/components/chat/context-sidebar"
+import { useAuth } from "@/hooks/use-auth"
+import { streamChat } from "@/lib/api"
 
 interface Message {
   id: string
@@ -20,67 +21,77 @@ const suggestedQuestions = [
   "What additional tests would you recommend?",
 ]
 
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    content: "I've analyzed a clinical note for a 58-year-old male with elevated fasting glucose, family history of diabetes, and symptoms of polydipsia and polyuria. The top diagnosis is Type 2 Diabetes Mellitus with 96% confidence.",
-    isUser: false,
-    timestamp: "2:45 PM",
-  },
-  {
-    id: "2",
-    content: "What clinical findings support this diagnosis?",
-    isUser: true,
-    timestamp: "2:46 PM",
-  },
-  {
-    id: "3",
-    content: "Several key findings support the Type 2 Diabetes diagnosis:\n\n1. **Elevated Fasting Glucose** (confidence: 92%) - At 142 mg/dL, this exceeds the diagnostic threshold of 126 mg/dL\n\n2. **Increased Thirst (Polydipsia)** (confidence: 88%) - A classic symptom often accompanying hyperglycemia\n\n3. **Frequent Urination (Polyuria)** (confidence: 85%) - Occurs when glucose spills into urine\n\n4. **Family History** - Strong genetic predisposition to Type 2 DM\n\n5. **Age & BMI** - 58 years old with BMI 28 are typical risk factors\n\nThese findings collectively indicate impaired glucose metabolism characteristic of Type 2 Diabetes.",
-    isUser: false,
-    timestamp: "2:47 PM",
-  },
-]
+function nowTime() {
+  return new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+}
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>(mockMessages)
+  const { session } = useAuth()
+  const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [showContext, setShowContext] = useState(true)
+  const [sessionId, setSessionId] = useState<string | undefined>()
   const [showSidebar, setShowSidebar] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
-  const handleSendMessage = (content: string) => {
-    // Add user message
-    const userMessage: Message = {
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
+  const handleSendMessage = async (content: string) => {
+    if (!session?.access_token) return
+
+    const userMsg: Message = {
       id: Date.now().toString(),
       content,
       isUser: true,
-      timestamp: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      timestamp: nowTime(),
     }
-
-    setMessages((prev) => [...prev, userMessage])
+    setMessages((prev) => [...prev, userMsg])
     setIsLoading(true)
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: "That's an excellent question. Based on the clinical evidence and the analysis of this case, I would recommend considering additional laboratory workup including HbA1c for glycemic control assessment, lipid panel given the comorbidity findings, and potentially thyroid function tests given the metabolic presentation.",
-        isUser: false,
-        timestamp: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      }
-      setMessages((prev) => [...prev, aiMessage])
-      setIsLoading(false)
-    }, 1500)
-  }
+    const aiId = (Date.now() + 1).toString()
+    // Add a placeholder AI message that we'll stream into
+    setMessages((prev) => [
+      ...prev,
+      { id: aiId, content: "", isUser: false, timestamp: nowTime() },
+    ])
 
-  const handleSuggestedQuestion = (question: string) => {
-    handleSendMessage(question)
+    try {
+      let accumulated = ""
+      for await (const event of streamChat(content, session.access_token, { sessionId })) {
+        if (event.type === "token") {
+          accumulated += event.content
+          setMessages((prev) =>
+            prev.map((m) => (m.id === aiId ? { ...m, content: accumulated } : m))
+          )
+        } else if (event.type === "done") {
+          setSessionId(event.session_id)
+        } else if (event.type === "error") {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === aiId ? { ...m, content: `Error: ${event.content}` } : m
+            )
+          )
+        }
+      }
+    } catch (err: any) {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === aiId
+            ? { ...m, content: `Failed to reach AI service. ${err.message ?? ""}` }
+            : m
+        )
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="flex gap-6 h-[calc(100vh-8rem)]">
       {/* Desktop Context Sidebar */}
       <div className="hidden sm:block">
-        <ContextSidebar isOpen={showContext} />
+        <ContextSidebar isOpen={true} />
       </div>
 
       {/* Main Chat Area */}
@@ -96,21 +107,16 @@ export default function ChatPage() {
               <p className="text-sm text-foreground-muted">Discuss diagnoses and clinical findings</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gold/20 text-gold border border-gold/30">
-              Demo
-            </span>
-            <button
-              onClick={() => setShowSidebar(!showSidebar)}
-              className="sm:hidden p-2 hover:bg-white/[0.08] rounded-lg transition-colors"
-            >
-              {showSidebar ? (
-                <X className="w-5 h-5 text-foreground" />
-              ) : (
-                <Menu className="w-5 h-5 text-foreground" />
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => setShowSidebar(!showSidebar)}
+            className="sm:hidden p-2 hover:bg-white/[0.08] rounded-lg transition-colors"
+          >
+            {showSidebar ? (
+              <X className="w-5 h-5 text-foreground" />
+            ) : (
+              <Menu className="w-5 h-5 text-foreground" />
+            )}
+          </button>
         </div>
 
         {/* Messages Area */}
@@ -132,7 +138,7 @@ export default function ChatPage() {
               {suggestedQuestions.map((question) => (
                 <button
                   key={question}
-                  onClick={() => handleSuggestedQuestion(question)}
+                  onClick={() => handleSendMessage(question)}
                   className="px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.08] text-sm text-foreground-muted hover:text-foreground hover:bg-white/[0.08] transition-colors"
                 >
                   {question}
@@ -150,7 +156,7 @@ export default function ChatPage() {
                 timestamp={message.timestamp}
               />
             ))}
-            {isLoading && (
+            {isLoading && messages[messages.length - 1]?.content === "" && (
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
                   <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -163,6 +169,7 @@ export default function ChatPage() {
                 </div>
               </div>
             )}
+            <div ref={bottomRef} />
           </div>
         )}
 
