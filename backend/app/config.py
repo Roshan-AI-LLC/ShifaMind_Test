@@ -29,8 +29,12 @@ class Settings(BaseSettings):
     S3_BUCKET: str = "shifamind-models"
     S3_MODEL_KEY: str = "phase1/phase1_best.pt"
     S3_THRESHOLDS_KEY: str = "phase1/optimal_thresholds.json"
+    S3_CONCEPT_LIST_KEY: str = "phase1/concept_list.json"
+    S3_ICD10_INFO_KEY: str = "phase1/top50_icd10_info.json"
     LOCAL_MODEL_PATH: str = "model/phase1_best.pt"
     LOCAL_THRESHOLDS_PATH: str = "model/optimal_thresholds.json"
+    LOCAL_CONCEPT_LIST_PATH: str = "model/concept_list.json"
+    LOCAL_ICD10_INFO_PATH: str = "model/top50_icd10_info.json"
     DEVICE: str = "cpu"
 
     # App

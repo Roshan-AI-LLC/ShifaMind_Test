@@ -1,36 +1,10 @@
 """
-Phase 1 inference — tokenize → predict → threshold → ranked output.
+Phase 1 inference — tokenize → predict → threshold → ranked output (v2.1).
 """
 import time
-import sys
-from pathlib import Path
 
-# Ensure model/ directory is importable
-repo_root = Path(__file__).resolve().parents[3]  # models/ → app/ → backend/ → repo root
-if str(repo_root) not in sys.path:
-    sys.path.insert(0, str(repo_root))
-
-from model.config import CONCEPTS, ICD10_CODES, DEFAULT_THRESHOLD, DEFAULT_CONCEPT_THRESHOLD
+from model.config import DEFAULT_THRESHOLD, DEFAULT_CONCEPT_THRESHOLD, MAX_SEQ_LENGTH
 from .loader import model_state
-
-
-def _load_icd10_descriptions() -> dict[str, str]:
-    import json
-    desc_path = repo_root / "model" / "icd10_descriptions.json"
-    if desc_path.exists():
-        with open(desc_path) as f:
-            return json.load(f)
-    return {code: code for code in ICD10_CODES}
-
-
-_ICD10_DESCRIPTIONS: dict[str, str] = {}
-
-
-def get_icd10_descriptions() -> dict[str, str]:
-    global _ICD10_DESCRIPTIONS
-    if not _ICD10_DESCRIPTIONS:
-        _ICD10_DESCRIPTIONS = _load_icd10_descriptions()
-    return _ICD10_DESCRIPTIONS
 
 
 def run_inference(text: str, apply_tuned_thresholds: bool = True) -> dict:
@@ -53,13 +27,15 @@ def run_inference(text: str, apply_tuned_thresholds: bool = True) -> dict:
     tokenizer = model_state["tokenizer"]
     thresholds_map = model_state["thresholds"] or {}
     device = model_state["device"]
-    icd10_desc = get_icd10_descriptions()
+    concepts = model_state["concepts"]
+    icd_codes = model_state["icd_codes"]
+    icd_descriptions = model_state["icd_descriptions"] or {}
 
     # ── Tokenize ──
     inputs = tokenizer(
         text,
         return_tensors="pt",
-        max_length=512,
+        max_length=MAX_SEQ_LENGTH,
         truncation=True,
         padding="max_length",
     )
@@ -72,12 +48,13 @@ def run_inference(text: str, apply_tuned_thresholds: bool = True) -> dict:
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
     inference_ms = int((time.perf_counter() - t0) * 1000)
 
-    concept_scores = outputs["concept_scores"][0].cpu().tolist()   # (111,)
-    diagnosis_probs = outputs["diagnosis_probs"][0].cpu().tolist() # (50,)
+    # Apply sigmoid to raw logits
+    concept_scores = torch.sigmoid(outputs["concept_logits"])[0].cpu().tolist()
+    diagnosis_probs = torch.sigmoid(outputs["diagnosis_logits"])[0].cpu().tolist()
 
     # ── Build predictions ──
     predictions = []
-    for idx, (code, prob) in enumerate(zip(ICD10_CODES, diagnosis_probs)):
+    for idx, (code, prob) in enumerate(zip(icd_codes, diagnosis_probs)):
         threshold = (
             thresholds_map.get(code, DEFAULT_THRESHOLD)
             if apply_tuned_thresholds
@@ -86,20 +63,19 @@ def run_inference(text: str, apply_tuned_thresholds: bool = True) -> dict:
         predictions.append({
             "rank": 0,  # filled after sort
             "code": code,
-            "description": icd10_desc.get(code, code),
+            "description": icd_descriptions.get(code, code),
             "confidence": round(prob, 4),
             "threshold": round(threshold, 4),
             "above_threshold": bool(prob >= threshold),
         })
 
-    # Sort by confidence descending, assign ranks
     predictions.sort(key=lambda x: x["confidence"], reverse=True)
     for rank, pred in enumerate(predictions, start=1):
         pred["rank"] = rank
 
     # ── Build activated concepts ──
     activated_concepts = []
-    for concept, score in zip(CONCEPTS, concept_scores):
+    for concept, score in zip(concepts, concept_scores):
         activated_concepts.append({
             "concept": concept,
             "score": round(score, 4),
@@ -114,7 +90,7 @@ def run_inference(text: str, apply_tuned_thresholds: bool = True) -> dict:
         "activated_concepts": activated_concepts,
         "metadata": {
             "inference_time_ms": inference_ms,
-            "model_version": "phase1_v1",
+            "model_version": "mcb_v2.1",
             "threshold_source": threshold_source,
         },
     }
