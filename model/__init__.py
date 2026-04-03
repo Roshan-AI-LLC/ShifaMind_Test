@@ -1,4 +1,4 @@
-from .phase1_model import ShifaMind2Phase1
-from .config import CONCEPTS, ICD10_CODES, NUM_CONCEPTS, NUM_CODES
+from .phase1_model import ShifaMindMCB
+from .config import MODERNBERT_MODEL, MAX_SEQ_LENGTH, DEFAULT_THRESHOLD, DEFAULT_CONCEPT_THRESHOLD
 
-__all__ = ["ShifaMind2Phase1", "CONCEPTS", "ICD10_CODES", "NUM_CONCEPTS", "NUM_CODES"]
+__all__ = ["ShifaMindMCB", "MODERNBERT_MODEL", "MAX_SEQ_LENGTH", "DEFAULT_THRESHOLD", "DEFAULT_CONCEPT_THRESHOLD"]
