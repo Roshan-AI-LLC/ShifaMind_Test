@@ -49,6 +49,8 @@ function toAttributions(data: PredictResponse) {
     }))
 }
 
+const DIAGNOSIS_LIST_LIMIT = 5
+
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function WorkspacePage() {
@@ -89,10 +91,14 @@ export default function WorkspacePage() {
     })
   }
 
-  const predictions = result ? toPredictionsList(result) : []
+  const predictions = result
+    ? toPredictionsList(result).slice(0, DIAGNOSIS_LIST_LIMIT)
+    : []
   const concepts = result ? toConceptsList(result) : []
   const attributions = result ? toAttributions(result) : []
-  const activeDiagnoses = predictions.filter((p) => p.isActive).length
+  const activeDiagnoses = result
+    ? result.predictions.filter((p) => p.above_threshold).length
+    : 0
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -180,6 +186,11 @@ export default function WorkspacePage() {
 
               <TabsContent value="diagnoses" className="space-y-3">
                 <PredictionsList predictions={predictions} />
+                {result && result.predictions.length > DIAGNOSIS_LIST_LIMIT && (
+                  <p className="text-xs text-foreground-muted text-center">
+                    Showing top {DIAGNOSIS_LIST_LIMIT} of {result.predictions.length} ranked codes.
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={() => {

@@ -71,10 +71,7 @@ export function ConceptsTab({ concepts }: ConceptsTabProps) {
             <div className="flex flex-wrap gap-2">
               {filteredConcepts.map(concept => (
                 <div key={concept.name} className={concept.active ? "" : "opacity-50"}>
-                  <ConceptBadge
-                    concept={concept.name}
-                    score={concept.score}
-                  />
+                  <ConceptBadge name={concept.name} score={concept.score} />
                 </div>
               ))}
             </div>

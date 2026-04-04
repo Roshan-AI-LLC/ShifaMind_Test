@@ -20,9 +20,7 @@ interface PredictionsListProps {
 }
 
 export function PredictionsList({ predictions }: PredictionsListProps) {
-  const [expandedRank, setExpandedRank] = useState<number | null>(0)
-
-  const topPrediction = predictions[0]
+  const [expandedRank, setExpandedRank] = useState<number | null>(1)
 
   return (
     <div className="space-y-3">
@@ -68,10 +66,10 @@ export function PredictionsList({ predictions }: PredictionsListProps) {
                   <div className="pt-4 border-t border-white/[0.06] space-y-2">
                     <p className="text-xs text-foreground-muted uppercase tracking-wider">Contributing Concepts</p>
                     <div className="flex flex-wrap gap-2">
-                      {pred.concepts.map(concept => (
+                      {pred.concepts.map((concept) => (
                         <ConceptBadge
                           key={concept.name}
-                          concept={concept.name}
+                          name={concept.name}
                           score={concept.score}
                         />
                       ))}
@@ -113,8 +111,8 @@ export function PredictionsList({ predictions }: PredictionsListProps) {
                   
                   <div className="mt-3">
                     <ConfidenceBar
-                      value={pred.confidence}
-                      label={`${Math.round(pred.confidence * 100)}%`}
+                      value={Math.round(pred.confidence * 100)}
+                      showLabel
                     />
                   </div>
                 </div>
@@ -130,10 +128,10 @@ export function PredictionsList({ predictions }: PredictionsListProps) {
                 <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-2">
                   <p className="text-xs text-foreground-muted uppercase tracking-wider">Contributing Concepts</p>
                   <div className="flex flex-wrap gap-2">
-                    {pred.concepts.map(concept => (
+                    {pred.concepts.map((concept) => (
                       <ConceptBadge
                         key={concept.name}
-                        concept={concept.name}
+                        name={concept.name}
                         score={concept.score}
                       />
                     ))}
