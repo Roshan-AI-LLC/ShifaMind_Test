@@ -33,6 +33,15 @@ export type SseEvent =
   | { type: 'done'; session_id: string }
   | { type: 'error'; content: string }
 
+export interface SampleNote {
+  id: string
+  title: string
+  category: string
+  text: string
+  note_length: number
+  expected_codes?: string[] | null
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function authHeaders(token: string): HeadersInit {
@@ -43,6 +52,17 @@ function authHeaders(token: string): HeadersInit {
 }
 
 // ── Endpoints ────────────────────────────────────────────────────────────────
+
+export async function listSampleNotes(token: string): Promise<SampleNote[]> {
+  const res = await fetch(`${API_URL}/api/notes`, {
+    headers: authHeaders(token),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error((err as any).detail || `Failed to load sample notes (${res.status})`)
+  }
+  return res.json()
+}
 
 export async function predict(text: string, token: string): Promise<PredictResponse> {
   const res = await fetch(`${API_URL}/api/predict`, {

@@ -20,28 +20,41 @@ export default function HistoryPage() {
   const { user } = useAuth()
   const [predictions, setPredictions] = useState<HistoryEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
+    setLoadError(null)
     const supabase = createClient()
+    // Column names must match `supabase/migrations/001_initial_schema.sql` and backend `predict.py`.
     supabase
       .from("predictions")
-      .select("id, text, predictions, created_at")
-      .eq("user_id", user.id)
+      .select("id, input_text, predicted_codes, created_at")
+      .eq("doctor_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data, error }) => {
-        if (error || !data) { setIsLoading(false); return }
+        if (error) {
+          console.error("[history] Supabase:", error.message)
+          setLoadError(error.message)
+          setPredictions([])
+          setIsLoading(false)
+          return
+        }
+        if (!data) {
+          setIsLoading(false)
+          return
+        }
         const entries: HistoryEntry[] = data.map((row) => {
-          const preds: any[] = row.predictions ?? []
+          const preds: any[] = row.predicted_codes ?? []
           const topAbove = preds.filter((p) => p.above_threshold)
           const topDiag = topAbove[0]?.description ?? preds[0]?.description ?? "Unknown"
           return {
             id: row.id,
             date: new Date(row.created_at).toLocaleString(),
             diagnosis: topDiag,
-            content: row.text ?? "",
+            content: row.input_text ?? "",
             codes: preds.slice(0, 3).map((p) => ({
               code: p.code,
               label: p.description,
@@ -66,11 +79,19 @@ export default function HistoryPage() {
         </span>
       </div>
 
+      {loadError && (
+        <GlassCard className="border-destructive/40 bg-destructive/10">
+          <p className="text-sm text-destructive">
+            Could not load history: {loadError}
+          </p>
+        </GlassCard>
+      )}
+
       {isLoading ? (
         <div className="flex justify-center py-16">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
-      ) : predictions.length === 0 ? (
+      ) : predictions.length === 0 && !loadError ? (
         <GlassCard className="flex flex-col items-center justify-center py-16">
           <div className="w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
             <History className="w-8 h-8 text-foreground-subtle" />

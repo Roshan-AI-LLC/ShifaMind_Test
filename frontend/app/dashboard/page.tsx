@@ -50,12 +50,18 @@ export default function DashboardPage() {
     if (!user) return
     const supabase = createClient()
     Promise.all([
-      supabase.from("predictions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-      supabase.from("chat_sessions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+      supabase
+        .from("predictions")
+        .select("id", { count: "exact", head: true })
+        .eq("doctor_id", user.id),
+      supabase
+        .from("chat_sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("doctor_id", user.id),
     ]).then(([pred, chat]) => {
       setStats({
-        predictions: pred.count ?? 0,
-        chatSessions: chat.count ?? 0,
+        predictions: pred.error ? 0 : pred.count ?? 0,
+        chatSessions: chat.error ? 0 : chat.count ?? 0,
       })
     })
   }, [user])

@@ -4,14 +4,16 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 interface ConceptBadgeProps {
-  name: string
+  /** Concept label from the API; may be missing on some records. */
+  name?: string | null
   score?: number // 0-1
   showScore?: boolean
   size?: "sm" | "md"
   className?: string
 }
 
-function formatConceptName(name: string): string {
+function formatConceptName(name: string | null | undefined): string {
+  if (name == null || name === "") return ""
   return name.replace(/_/g, " ")
 }
 
@@ -37,7 +39,9 @@ const ConceptBadge = React.forwardRef<HTMLSpanElement, ConceptBadgeProps>(
           className
         )}
       >
-        <span className="capitalize">{formatConceptName(name)}</span>
+        <span className="capitalize">
+          {formatConceptName(name) || "—"}
+        </span>
         {showScore && (
           <span className={cn(
             "font-mono",
