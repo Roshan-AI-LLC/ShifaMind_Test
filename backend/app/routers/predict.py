@@ -1,5 +1,8 @@
+import asyncio
 import uuid
 import logging
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -11,6 +14,9 @@ from ..config import get_settings
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+# Single-worker executor keeps torch from blocking the event loop
+_inference_executor = ThreadPoolExecutor(max_workers=1)
 
 
 @router.post("/predict", response_model=PredictResponse, tags=["predict"])
@@ -29,9 +35,10 @@ async def predict(
         )
 
     try:
-        result = run_inference(
-            text=request.text,
-            apply_tuned_thresholds=request.apply_tuned_thresholds,
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            _inference_executor,
+            partial(run_inference, request.text, request.apply_tuned_thresholds),
         )
     except Exception as exc:
         logger.exception("Inference failed")

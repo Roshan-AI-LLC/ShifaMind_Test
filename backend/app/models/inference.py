@@ -3,7 +3,7 @@ Phase 1 inference — tokenize → predict → threshold → ranked output (v2.1
 """
 import time
 
-from model.config import DEFAULT_THRESHOLD, DEFAULT_CONCEPT_THRESHOLD, MAX_SEQ_LENGTH
+from model.config import DEFAULT_THRESHOLD, DEFAULT_CONCEPT_THRESHOLD, INFERENCE_MAX_LENGTH
 from .loader import model_state
 
 
@@ -32,12 +32,14 @@ def run_inference(text: str, apply_tuned_thresholds: bool = True) -> dict:
     icd_descriptions = model_state["icd_descriptions"] or {}
 
     # ── Tokenize ──
+    # Use INFERENCE_MAX_LENGTH (not MAX_SEQ_LENGTH) and no padding so we only
+    # process the actual tokens in the note — critical for CPU inference speed.
     inputs = tokenizer(
         text,
         return_tensors="pt",
-        max_length=MAX_SEQ_LENGTH,
+        max_length=INFERENCE_MAX_LENGTH,
         truncation=True,
-        padding="max_length",
+        padding=False,
     )
     input_ids = inputs["input_ids"].to(device)
     attention_mask = inputs["attention_mask"].to(device)

@@ -26,7 +26,7 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
 
   const wordCount = note.split(/\s+/).filter((w) => w.length > 0).length
   const tokenEstimate = Math.ceil(wordCount * 1.3)
-  const exceedsLimit = tokenEstimate > 6144
+  const exceedsLimit = tokenEstimate > 1024
 
   useEffect(() => {
     const token = session?.access_token
@@ -167,7 +167,7 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
           {wordCount} words (~{tokenEstimate} tokens)
         </span>
         <span className={exceedsLimit ? "text-destructive" : "text-foreground-muted"}>
-          {exceedsLimit ? "Exceeds 6144 token limit" : ""}
+          {exceedsLimit ? "Exceeds 1024 token limit — note will be truncated" : ""}
         </span>
       </div>
 

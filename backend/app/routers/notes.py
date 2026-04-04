@@ -24,6 +24,7 @@ async def list_notes(doctor: dict = Depends(get_current_doctor)):
                 "select": "id,title,category,text,note_length,expected_codes",
                 "is_active": "eq.true",
                 "order": "category.asc,title.asc",
+                "limit": "100",
             },
             headers={
                 "Authorization": f"Bearer {token}",

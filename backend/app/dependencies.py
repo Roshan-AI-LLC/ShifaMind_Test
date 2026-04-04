@@ -48,13 +48,41 @@ async def get_current_doctor(
             },
         )
 
-    if resp.status_code != 200 or not resp.json():
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Doctor account not found or inactive",
+    if resp.status_code == 200 and resp.json():
+        doctor = resp.json()[0]
+    else:
+        # No doctors row yet — auto-create from auth user data (first login)
+        full_name = (
+            user.get("user_metadata", {}).get("full_name")
+            or user.get("user_metadata", {}).get("name")
+            or user.get("email", "").split("@")[0]
         )
+        new_doctor = {
+            "id": user_id,
+            "email": user.get("email", ""),
+            "full_name": full_name,
+            "role": "doctor",
+            "is_active": True,
+        }
+        async with httpx.AsyncClient() as client:
+            create_resp = await client.post(
+                f"{settings.SUPABASE_URL}/rest/v1/doctors",
+                params={"on_conflict": "id"},
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "apikey": settings.SUPABASE_ANON_KEY,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation,resolution=merge-duplicates",
+                },
+                json=new_doctor,
+            )
+        if create_resp.status_code not in (200, 201) or not create_resp.json():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Doctor account could not be created",
+            )
+        doctor = create_resp.json()[0]
 
-    doctor = resp.json()[0]
     if not doctor.get("is_active", True):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive")
 
