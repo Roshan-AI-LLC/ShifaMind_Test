@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Zap, Clock, MessageSquare } from "lucide-react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { NoteInput } from "@/components/workspace/note-input"
@@ -11,6 +12,7 @@ import { FeedbackWidget } from "@/components/workspace/feedback-widget"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useAuth } from "@/hooks/use-auth"
 import { predict, submitReview, type PredictResponse } from "@/lib/api"
+import { persistWorkspaceChatContext } from "@/lib/chat-context"
 
 // ── Shape adapters ─────────────────────────────────────────────────────────
 
@@ -50,6 +52,7 @@ function toAttributions(data: PredictResponse) {
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function WorkspacePage() {
+  const router = useRouter()
   const { session } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<PredictResponse | null>(null)
@@ -177,7 +180,15 @@ export default function WorkspacePage() {
 
               <TabsContent value="diagnoses" className="space-y-3">
                 <PredictionsList predictions={predictions} />
-                <button className="w-full px-4 py-3 rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground hover:bg-white/[0.1] transition-colors flex items-center justify-center gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!result) return
+                    persistWorkspaceChatContext(result)
+                    router.push("/dashboard/chat")
+                  }}
+                  className="w-full px-4 py-3 rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground hover:bg-white/[0.1] transition-colors flex items-center justify-center gap-2 mt-4"
+                >
                   <MessageSquare className="w-4 h-4" />
                   Discuss in Chat →
                 </button>
