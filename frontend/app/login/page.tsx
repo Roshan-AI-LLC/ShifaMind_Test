@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase"
+import { requestAccess } from "./actions"
 
 type AuthMode = "password" | "magic-link"
 
@@ -22,7 +23,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [magicLinkSent, setMagicLinkSent] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  
   const [isRequestingAccess, setIsRequestingAccess] = React.useState(false)
+  const [reqLoading, setReqLoading] = React.useState(false)
+  const [reqSuccess, setReqSuccess] = React.useState(false)
+  const [reqError, setReqError] = React.useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -211,34 +216,60 @@ export default function LoginPage() {
             </div>
             
             {isRequestingAccess && (
-              <form 
-                className="w-full pt-4 mt-2 border-t border-white/[0.08] space-y-4 animate-fade-in"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const fd = new FormData(e.currentTarget);
-                  const subject = encodeURIComponent("Requesting Access to ShifaMind");
-                  const body = encodeURIComponent(
-                    `Name: ${fd.get('name')}\nEmail: ${fd.get('email')}\nOrganization: ${fd.get('organization')}\n\nI would like to request access to the platform.`
-                  );
-                  window.location.href = `mailto:founder@roshan-ai.com?subject=${subject}&body=${body}`;
-                }}
-              >
-                <div className="space-y-2">
-                  <Label htmlFor="req-name" className="text-xs text-foreground-muted">Full Name</Label>
-                  <Input id="req-name" name="name" required className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="req-email" className="text-xs text-foreground-muted">Work Email</Label>
-                  <Input id="req-email" name="email" type="email" required className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="req-org" className="text-xs text-foreground-muted">Organization</Label>
-                  <Input id="req-org" name="organization" required className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
-                </div>
-                <Button type="submit" size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium">
-                  Send Request
-                </Button>
-              </form>
+              <div className="w-full pt-4 mt-2 border-t border-white/[0.08] animate-fade-in">
+                {reqSuccess ? (
+                  <div className="text-center py-4 space-y-2">
+                    <div className="mx-auto w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-green-400" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground">Request Sent!</p>
+                    <p className="text-xs text-foreground-muted">We'll review it and get back to you shortly.</p>
+                  </div>
+                ) : (
+                  <form 
+                    className="space-y-4"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setReqLoading(true);
+                      setReqError(null);
+                      const fd = new FormData(e.currentTarget);
+                      const res = await requestAccess(fd);
+                      if (res.success) {
+                        setReqSuccess(true);
+                      } else {
+                        setReqError(res.error || "An error occurred.");
+                      }
+                      setReqLoading(false);
+                    }}
+                  >
+                    {reqError && (
+                      <div className="px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/30 text-xs text-destructive">
+                        {reqError}
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="req-name" className="text-xs text-foreground-muted">Full Name</Label>
+                      <Input id="req-name" name="name" required disabled={reqLoading} className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="req-email" className="text-xs text-foreground-muted">Work Email</Label>
+                      <Input id="req-email" name="email" type="email" required disabled={reqLoading} className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="req-org" className="text-xs text-foreground-muted">Organization</Label>
+                      <Input id="req-org" name="organization" required disabled={reqLoading} className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
+                    </div>
+                    <Button type="submit" size="sm" disabled={reqLoading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium transition-all">
+                      {reqLoading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="w-3 h-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                          Sending...
+                        </span>
+                      ) : "Send Request"}
+                    </Button>
+                  </form>
+                )}
+              </div>
             )}
           </div>
         </GlassCard>
