@@ -276,7 +276,7 @@ export default function LoginPage() {
 
         {/* Back link */}
         <p className="text-center text-sm text-foreground-muted">
-          <Link href="/" className="hover:text-foreground transition-colors inline-flex items-center gap-1">
+          <Link href="https://shifamind.me" className="hover:text-foreground transition-colors inline-flex items-center gap-1">
             <ArrowLeft className="w-3 h-3" />
             Back to main site
           </Link>
