@@ -18,16 +18,6 @@ Authenticated clinical decision support platform for doctors — ICD-10 predicti
 | LLM | OpenRouter (default) → AWS Bedrock (swap via env var) |
 | Model Storage | AWS S3 |
 
----
-
-## Build Plan
-
-| Part | Focus | Status |
-|------|-------|--------|
-| **1** | Foundation: scaffold, auth, DB schema, backend skeleton | ✅ This PR |
-| **2** | ML serving: Phase 1 model + `/api/predict` + Workspace UI | Pending |
-| **3** | LLM & chat: OpenRouter/Bedrock + SSE streaming | Pending |
-| **4** | Data layer + admin dashboard + UX polish | Pending |
 
 ---
 
