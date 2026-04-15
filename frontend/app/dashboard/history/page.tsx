@@ -13,7 +13,7 @@ interface HistoryEntry {
   diagnosis: string
   content: string
   codes: { code: string; label: string; confidence: number }[]
-  userFeedback?: string
+  userFeedback?: "helpful" | "partial" | "incorrect"
 }
 
 export default function HistoryPage() {

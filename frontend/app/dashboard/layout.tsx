@@ -32,7 +32,7 @@ export default function DashboardLayout({
       }
     : undefined
 
-  const isAdmin = user?.user_metadata?.role === "admin"
+  const isAdmin = user?.email === "admin@shifamind.me" || user?.user_metadata?.role === "admin"
 
   if (isLoading) {
     return (

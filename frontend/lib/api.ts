@@ -148,3 +148,61 @@ export async function checkHealth(): Promise<{ status: string; model_loaded: boo
   if (!res.ok) throw new Error('API unreachable')
   return res.json()
 }
+
+// ── Admin Endpoints ──────────────────────────────────────────────────────────
+
+export interface AdminStatsResponse {
+  total_predictions: number
+  total_chat_sessions: number
+  total_reviews: number
+  active_doctors: number
+  avg_rating: number | null
+  top_icd10_codes: { code: string; count: number }[]
+}
+
+export interface AdminReview {
+  id: string
+  rating: number
+  accuracy_rating: number | null
+  interpretability_rating: number | null
+  comment: string | null
+  created_at: string
+  doctor: {
+    full_name: string
+    email: string
+    specialty: string
+  }
+  prediction: {
+    id: string
+    input_text: string
+  }
+}
+
+export interface ReviewListResponse {
+  reviews: AdminReview[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export async function fetchAdminStats(token: string): Promise<AdminStatsResponse> {
+  const res = await fetch(`${API_URL}/api/admin/stats`, {
+    headers: authHeaders(token),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error((err as any).detail || `Failed to load admin stats (${res.status})`)
+  }
+  return res.json()
+}
+
+export async function fetchAdminReviews(token: string, offset = 0, limit = 50): Promise<ReviewListResponse> {
+  const res = await fetch(`${API_URL}/api/admin/reviews?offset=${offset}&limit=${limit}`, {
+    headers: authHeaders(token),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error((err as any).detail || `Failed to load admin reviews (${res.status})`)
+  }
+  return res.json()
+}

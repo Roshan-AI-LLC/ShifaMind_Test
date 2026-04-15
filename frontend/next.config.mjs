@@ -52,9 +52,6 @@ function publicEnvFromParent() {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: publicEnvFromParent(),
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     unoptimized: true,
   },
