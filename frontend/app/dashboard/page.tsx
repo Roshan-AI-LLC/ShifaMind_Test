@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { FlaskConical, MessageSquare, History, Brain, Activity, Zap, BarChart3, Clock } from "lucide-react"
+import { FlaskConical, MessageSquare, History, Activity, Zap, BarChart3, Clock } from "lucide-react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { StatsTrend } from "@/components/ui/stats-trend"
 import { cn } from "@/lib/utils"
@@ -113,7 +113,7 @@ export default function DashboardPage() {
       <GlassCard className="animate-fade-in stagger-6">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center">
-            <Brain className="w-6 h-6 text-foreground-muted" />
+            <img src="/icon_transparent.png" className="w-8 h-8 object-contain opacity-80" alt="ShifaMind Model" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">

@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Brain, Mail, Lock, ArrowRight, Sparkles, ArrowLeft } from "lucide-react"
+import { Mail, Lock, ArrowRight, Sparkles, ArrowLeft } from "lucide-react"
 import { AmbientBackground } from "@/components/ambient-background"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [magicLinkSent, setMagicLinkSent] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [isRequestingAccess, setIsRequestingAccess] = React.useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,11 +54,6 @@ export default function LoginPage() {
     setIsLoading(false)
   }
 
-  const handleDemoLogin = () => {
-    setEmail("demo@shifamind.me")
-    setPassword("ShifaMind2025!")
-  }
-
   return (
     <div className="relative min-h-screen flex items-center justify-center p-4">
       <AmbientBackground />
@@ -65,8 +61,8 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-md space-y-6 animate-fade-in">
         {/* Logo */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/20 border border-primary/30 shadow-[0_0_40px_rgba(78,205,196,0.3)]">
-            <Brain className="w-8 h-8 text-primary" />
+          <div className="inline-flex items-center justify-center w-24 h-24">
+            <img src="/icon_transparent.png" className="w-full h-full object-contain" alt="ShifaMind Logo" />
           </div>
           <div>
             <h1 className="text-2xl font-semibold text-foreground">ShifaMind</h1>
@@ -191,26 +187,59 @@ export default function LoginPage() {
           )}
         </GlassCard>
 
-        {/* Demo credentials card */}
+        {/* Request Access Card */}
         <GlassCard padding="sm" className="border-primary/20">
-          <div className="flex items-start gap-3">
-            <div className="shrink-0 w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary" />
+          <div className="flex flex-col items-start gap-3">
+            <div className="flex items-center gap-3 w-full">
+              <div className="shrink-0 w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">Need Access?</p>
+                <p className="text-xs text-foreground-muted mt-0.5">
+                  Request an invite to ShifaMind Platform
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsRequestingAccess(!isRequestingAccess)}
+                className="shrink-0 text-primary hover:text-primary hover:bg-primary/10"
+              >
+                {isRequestingAccess ? "Cancel" : "Request Access"}
+              </Button>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">Demo Access</p>
-              <p className="text-xs text-foreground-muted mt-0.5">
-                Use demo@shifamind.me to explore
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDemoLogin}
-              className="shrink-0 text-primary hover:text-primary hover:bg-primary/10"
-            >
-              Use Demo
-            </Button>
+            
+            {isRequestingAccess && (
+              <form 
+                className="w-full pt-4 mt-2 border-t border-white/[0.08] space-y-4 animate-fade-in"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const fd = new FormData(e.currentTarget);
+                  const subject = encodeURIComponent("Requesting Access to ShifaMind");
+                  const body = encodeURIComponent(
+                    `Name: ${fd.get('name')}\nEmail: ${fd.get('email')}\nOrganization: ${fd.get('organization')}\n\nI would like to request access to the platform.`
+                  );
+                  window.location.href = `mailto:founder@roshan-ai.com?subject=${subject}&body=${body}`;
+                }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="req-name" className="text-xs text-foreground-muted">Full Name</Label>
+                  <Input id="req-name" name="name" required className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="req-email" className="text-xs text-foreground-muted">Work Email</Label>
+                  <Input id="req-email" name="email" type="email" required className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="req-org" className="text-xs text-foreground-muted">Organization</Label>
+                  <Input id="req-org" name="organization" required className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
+                </div>
+                <Button type="submit" size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium">
+                  Send Request
+                </Button>
+              </form>
+            )}
           </div>
         </GlassCard>
 

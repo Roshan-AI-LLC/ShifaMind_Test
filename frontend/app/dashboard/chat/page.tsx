@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Brain, MessageSquare, Menu, X } from "lucide-react"
+import { MessageSquare, Menu, X } from "lucide-react"
 import { ChatMessage } from "@/components/chat/chat-message"
 import { ChatInput } from "@/components/chat/chat-input"
 import { ContextSidebar } from "@/components/chat/context-sidebar"
@@ -150,8 +150,8 @@ export default function ChatPage() {
           <div className="flex-1 flex flex-col items-center justify-center py-12">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-3xl rounded-full" />
-              <div className="relative w-20 h-20 rounded-2xl bg-white/[0.06] flex items-center justify-center">
-                <Brain className="w-10 h-10 text-primary" />
+              <div className="relative w-24 h-24 flex items-center justify-center">
+                <img src="/icon_transparent.png" className="w-full h-full object-contain" alt="ShifaMind AI" />
               </div>
             </div>
 

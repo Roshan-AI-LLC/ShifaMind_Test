@@ -12,7 +12,6 @@ import {
   User,
   Shield,
   ChevronLeft,
-  Brain,
   X,
 } from "lucide-react"
 
@@ -76,8 +75,8 @@ export function Sidebar({ isAdmin = false, isMobileOpen = false, onMobileClose }
         {/* Logo area */}
         <div className="flex items-center h-16 px-4 border-b border-sidebar-border">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/20">
-              <Brain className="w-5 h-5 text-primary" />
+            <div className="flex items-center justify-center w-8 h-8">
+              <img src="/icon_transparent.png" className="w-full h-full object-contain" alt="ShifaMind Logo" />
             </div>
             <span 
               className={cn(
