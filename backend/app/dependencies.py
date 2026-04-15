@@ -65,12 +65,13 @@ async def get_current_doctor(
             "is_active": True,
         }
         async with httpx.AsyncClient() as client:
+            # Use service role key to insert into restricted table
             create_resp = await client.post(
                 f"{settings.SUPABASE_URL}/rest/v1/doctors",
                 params={"on_conflict": "id"},
                 headers={
-                    "Authorization": f"Bearer {token}",
-                    "apikey": settings.SUPABASE_ANON_KEY,
+                    "Authorization": f"Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}",
+                    "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
                     "Content-Type": "application/json",
                     "Prefer": "return=representation,resolution=merge-duplicates",
                 },

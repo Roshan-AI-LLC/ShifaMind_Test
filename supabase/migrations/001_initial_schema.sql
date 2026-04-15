@@ -30,6 +30,25 @@ CREATE TRIGGER doctors_updated_at
     BEFORE UPDATE ON doctors
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- Protect Role and Status fields
+CREATE OR REPLACE FUNCTION protect_doctor_fields()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If current user is not service role (backend admin calls bypass this)
+    IF current_setting('request.jwt.claims', true)::jsonb->>'role' != 'service_role' THEN
+        -- Prevent modification of role or is_active
+        IF NEW.role IS DISTINCT FROM OLD.role OR NEW.is_active IS DISTINCT FROM OLD.is_active THEN
+            RAISE EXCEPTION 'Not allowed to update role or is_active fields';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_doctor_updates
+    BEFORE UPDATE ON doctors
+    FOR EACH ROW EXECUTE FUNCTION protect_doctor_fields();
+
 
 -- ── Sample Notes ─────────────────────────────────────────────
 CREATE TABLE sample_notes (
@@ -121,9 +140,12 @@ ALTER TABLE chat_messages  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sample_notes   ENABLE ROW LEVEL SECURITY;
 
--- Doctors: each doctor sees only their own row
-CREATE POLICY "doctors_own" ON doctors
-    FOR ALL USING (auth.uid() = id);
+-- Doctors: each doctor sees and can update only their own row
+CREATE POLICY "doctors_own_select" ON doctors
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "doctors_own_update" ON doctors
+    FOR UPDATE USING (auth.uid() = id);
 
 -- Admins can read all doctors
 CREATE POLICY "doctors_admin_read" ON doctors

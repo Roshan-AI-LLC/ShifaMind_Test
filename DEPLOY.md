@@ -193,23 +193,24 @@ pip install supabase python-dotenv
 
 > Always use a venv — never `pip install` globally on a Mac/Linux machine. Your `.venv/` folder is already in `.gitignore`.
 
-### 5b. Seed doctor accounts
+### 5b. Seed demo and admin accounts
 
 ```bash
 SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co \
 SUPABASE_SERVICE_ROLE_KEY=eyJ... \
-python scripts/seed_doctors.py
+python scripts/wipe_and_seed.py
 ```
 
-This creates **15 doctor accounts** (12 doctors + 3 admins).
-Default password: `ShifaMind2025!`
+This creates your core accounts:
+- `demo@shifamind.me`
+- `admin@shifamind.me`
 
 You'll see output like:
 ```
-  Creating s.chen@shifamind.dev (doctor)... OK (id=abc12345...)
-  Creating j.okafor@shifamind.dev (doctor)... OK
-  ...
-  Done: 15 created, 0 skipped, 0 failed
+  Deleted legacy users (if any).
+  Sample notes re-seeded.
+  Created demo@shifamind.me - doctor
+  Created admin@shifamind.me - admin
 ```
 
 ### 5c. Test login
@@ -217,8 +218,12 @@ You'll see output like:
 Go back to **http://localhost:3000/login**
 
 Sign in with:
-- **Email:** `o.shaikh@shifamind.dev` (admin)
-- **Password:** `ShifaMind2025!`
+- **Email:** `admin@shifamind.me` (admin)
+- **Password:** `Admin@Shifa2025!`
+
+Or for a standard doctor view:
+- **Email:** `demo@shifamind.me` (doctor)
+- **Password:** `Demo@Shifa2025!`
 
 You should be redirected to `/dashboard`. The app shell (sidebar, header, dashboard home) should render fully.
 
@@ -608,7 +613,7 @@ Or push any commit to the branch — Netlify auto-deploys.
 ### 10c. Test the full flow
 
 1. Go to `https://platform.shifamind.me`
-2. Login with `o.shaikh@shifamind.dev` / `ShifaMind2025!`
+2. Login with `demo@shifamind.me` / `Demo@Shifa2025!`
 3. Navigate to **Workspace**
 4. Click "Choose a sample clinical note" — you should see the 10 seeded notes
 5. Select one and click **Analyze with ShifaMind**
@@ -654,9 +659,9 @@ export SSH_KEY=~/.ssh/shifamind.pem
 Run through this checklist:
 
 ### Auth
-- [ ] Login at `/login` with `s.chen@shifamind.dev` / `ShifaMind2025!` — redirects to `/dashboard`
+- [ ] Login at `/login` with `demo@shifamind.me` / `Demo@Shifa2025!` — redirects to `/dashboard`
 - [ ] Unauthenticated visit to `/dashboard` — redirects to `/login`
-- [ ] Admin login with `o.shaikh@shifamind.dev` — sees Admin link in sidebar
+- [ ] Admin login with `admin@shifamind.me` / `Admin@Shifa2025!` — allows visiting `/dashboard/admin`
 
 ### Workspace
 - [ ] `/dashboard/workspace` — note selector dropdown shows 10 sample notes

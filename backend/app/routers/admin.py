@@ -25,6 +25,20 @@ def _service_role_headers(settings) -> dict:
     }
 
 
+async def _get_demo_id(client, base_url, headers) -> str | None:
+    try:
+        resp = await client.get(
+            f"{base_url}/rest/v1/doctors",
+            params={"select": "id", "email": "eq.demo@shifamind.me", "limit": "1"},
+            headers=headers
+        )
+        if resp.status_code == 200 and resp.json():
+            return resp.json()[0]["id"]
+    except Exception:
+        pass
+    return None
+
+
 @router.get("/admin/stats", tags=["admin"])
 async def get_stats(admin: dict = Depends(get_admin_doctor)):
     """Platform-wide usage statistics (admin only)."""
@@ -32,10 +46,16 @@ async def get_stats(admin: dict = Depends(get_admin_doctor)):
     headers = _service_role_headers(settings)
 
     async with httpx.AsyncClient() as client:
+        demo_id = await _get_demo_id(client, settings.SUPABASE_URL, headers)
+        demo_filter = {"doctor_id": f"neq.{demo_id}"} if demo_id else {}
+        doc_filter = {"is_active": "eq.true", "email": "neq.demo@shifamind.me"}
+
         pred_resp, chat_resp, review_resp, doctor_resp = await _gather(
             client,
             settings.SUPABASE_URL,
             headers,
+            demo_filter,
+            doc_filter
         )
 
     predictions_count = _parse_count(pred_resp)
@@ -54,9 +74,12 @@ async def get_stats(admin: dict = Depends(get_admin_doctor)):
     top_codes: list[dict] = []
     try:
         async with httpx.AsyncClient() as client:
+            params = {"select": "predicted_codes", "order": "created_at.desc", "limit": "200"}
+            if demo_id:
+                params["doctor_id"] = f"neq.{demo_id}"
             p_resp = await client.get(
                 f"{settings.SUPABASE_URL}/rest/v1/predictions",
-                params={"select": "predicted_codes", "order": "created_at.desc", "limit": "200"},
+                params=params,
                 headers=headers,
             )
         if p_resp.status_code == 200:
@@ -94,16 +117,21 @@ async def list_all_reviews(
     headers = _service_role_headers(settings)
 
     async with httpx.AsyncClient() as client:
+        demo_id = await _get_demo_id(client, settings.SUPABASE_URL, headers)
+        params = {
+            "select": "id,rating,accuracy_rating,interpretability_rating,comment,created_at,"
+                      "doctor:doctors(full_name,email,specialty),"
+                      "prediction:predictions(id,input_text)",
+            "order": "created_at.desc",
+            "limit": str(limit),
+            "offset": str(offset),
+        }
+        if demo_id:
+            params["doctor_id"] = f"neq.{demo_id}"
+
         resp = await client.get(
             f"{settings.SUPABASE_URL}/rest/v1/reviews",
-            params={
-                "select": "id,rating,accuracy_rating,interpretability_rating,comment,created_at,"
-                          "doctor:doctors(full_name,email,specialty),"
-                          "prediction:predictions(id,input_text)",
-                "order": "created_at.desc",
-                "limit": str(limit),
-                "offset": str(offset),
-            },
+            params=params,
             headers={**headers, "Prefer": "count=exact"},
         )
 
@@ -116,7 +144,7 @@ async def list_all_reviews(
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
-async def _gather(client, base_url, headers):
+async def _gather(client, base_url, headers, demo_filter, doc_filter):
     import asyncio
 
     async def get_count(table: str, extra_params: dict = {}):
@@ -127,10 +155,10 @@ async def _gather(client, base_url, headers):
         )
 
     return await asyncio.gather(
-        get_count("predictions"),
-        get_count("chat_sessions"),
-        get_count("reviews"),
-        get_count("doctors", {"is_active": "eq.true"}),
+        get_count("predictions", demo_filter),
+        get_count("chat_sessions", demo_filter),
+        get_count("reviews", demo_filter),
+        get_count("doctors", doc_filter),
     )
 
 
