@@ -31,7 +31,7 @@ class OpenRouterProvider(LLMProvider):
                 *messages,
             ],
             "stream": True,
-            "temperature": 0.3,
+            "temperature": 0.7,
             "max_tokens": 1500,
         }
 
