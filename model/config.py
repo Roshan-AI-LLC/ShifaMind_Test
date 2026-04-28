@@ -9,7 +9,7 @@ These constants are fallback defaults only.
 # ── Model backbone ────────────────────────────────────────────────────────────
 MODERNBERT_MODEL = "thomas-sounack/BioClinical-ModernBERT-base"
 MAX_SEQ_LENGTH = 6144          # training context length — do not change
-INFERENCE_MAX_LENGTH = 1024    # CPU inference cap — truncates long notes for speed
+INFERENCE_MAX_LENGTH = 4096    # Increased from 1024 to better match training distribution (6144). Discharge summaries need long context for accurate ICD-10 prediction.
 
 # ── Architecture constants ────────────────────────────────────────────────────
 HIDDEN_SIZE = 768

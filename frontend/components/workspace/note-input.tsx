@@ -26,7 +26,9 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
 
   const wordCount = note.split(/\s+/).filter((w) => w.length > 0).length
   const tokenEstimate = Math.ceil(wordCount * 1.3)
-  const exceedsLimit = tokenEstimate > 1024
+  const tooShortForReliable = tokenEstimate > 0 && tokenEstimate < 1500
+  const idealRange = tokenEstimate >= 3000 && tokenEstimate <= 6000
+  const exceedsLimit = tokenEstimate > 6144
 
   useEffect(() => {
     const token = session?.access_token
@@ -77,7 +79,9 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
         </div>
         <div>
           <h2 className="font-medium text-foreground">Clinical Note Input</h2>
-          <p className="text-xs text-foreground-muted">Paste a discharge summary or clinical note</p>
+          <p className="text-xs text-foreground-muted">
+            Paste a complete discharge summary for best results (3000–6000 tokens)
+          </p>
         </div>
       </div>
 
@@ -158,7 +162,13 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
         onChange={(e) => setNote(e.target.value)}
         placeholder="Paste clinical note here…"
         className={`flex-1 min-h-64 p-3 rounded-lg bg-white/[0.04] border ${
-          exceedsLimit ? "border-destructive" : "border-white/[0.08]"
+          exceedsLimit
+            ? "border-destructive"
+            : tooShortForReliable
+            ? "border-gold/40"
+            : idealRange
+            ? "border-primary/40"
+            : "border-white/[0.08]"
         } text-foreground text-sm font-mono focus:outline-none focus:border-primary/50 resize-none placeholder:text-foreground-subtle`}
       />
 
@@ -166,8 +176,24 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
         <span className="text-foreground-muted">
           {wordCount} words (~{tokenEstimate} tokens)
         </span>
-        <span className={exceedsLimit ? "text-destructive" : "text-foreground-muted"}>
-          {exceedsLimit ? "Exceeds 1024 token limit — note will be truncated" : ""}
+        <span
+          className={
+            exceedsLimit
+              ? "text-destructive"
+              : tooShortForReliable
+              ? "text-gold"
+              : idealRange
+              ? "text-primary"
+              : "text-foreground-muted"
+          }
+        >
+          {exceedsLimit
+            ? "Exceeds 6144 token training context — will be truncated"
+            : tooShortForReliable
+            ? "Short input — predictions may be unreliable. Full discharge summaries (3000–6000 tokens) work best."
+            : idealRange
+            ? "Ideal input length for reliable predictions"
+            : ""}
         </span>
       </div>
 
