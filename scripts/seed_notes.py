@@ -413,6 +413,411 @@ FOLLOW-UP
 3. Tobacco Cessation Program: Appointment arranged within 2 weeks
 4. Pulmonary Rehabilitation: Referral placed — patient to be contacted for enrollment""",
     },
+    {
+        "title": "Acute Hypoxemic Respiratory Failure — Severe CAP",
+        "category": "Pulmonary / Critical Care",
+        "expected_codes": ["J9601"],
+        "text": """DISCHARGE SUMMARY
+==================
+Patient: Gloria Mendez, 61F | MRN: 8820341
+Admission: 10/21/2025 | Discharge: 10/29/2025 | LOS: 8 days
+Attending: Dr. T. Nguyen, MD | Service: Medical ICU / Pulmonary Critical Care
+
+CHIEF COMPLAINT
+Severe shortness of breath, high fever, and confusion for two days, found to have critical hypoxemia on arrival.
+
+HISTORY OF PRESENT ILLNESS
+Ms. Mendez is a 61-year-old woman with a history of type 2 diabetes mellitus, hypertension, and obesity who presents with a two-day history of progressive dyspnea, high fever (39.6°C at home), productive cough with rust-colored sputum, and altered mental status noted by her daughter, who describes her mother as confused and unable to complete sentences. The patient reports that she felt a mild sore throat and body aches approximately five days before admission, which she initially treated with over-the-counter medications. Over the subsequent two to three days, her symptoms escalated dramatically with onset of shaking chills, pleuritic right-sided chest pain, worsening productive cough, and profound fatigue preventing her from leaving bed.
+
+Her daughter brought her to the emergency department after finding her disoriented and noting her lips appeared bluish. She had not eaten or taken her medications for approximately 48 hours prior to admission. She had not received this season's influenza vaccine and has never received pneumococcal vaccination. She denies sick contacts in the prior two weeks, recent travel, aspiration event, animal exposures, or recent healthcare exposures. She has no history of recurrent pneumonia, structural lung disease, or immunocompromising conditions. She has not been on corticosteroids or immunosuppressants.
+
+On arrival to the emergency department, she was in severe respiratory distress with an oxygen saturation of 72% on room air. She was immediately placed on high-flow nasal cannula at 60 L/min with FiO₂ 100%, with oxygen saturation improving to 88%. She was subsequently transitioned to non-invasive positive pressure ventilation (BIPAP: IPAP 14, EPAP 8, FiO₂ 80%) with improvement in SpO₂ to 92–94% and some improvement in her mental status. Chest radiograph demonstrated right lower lobe and right middle lobe consolidation with associated moderate right-sided pleural effusion. Initial ABG revealed pH 7.28, PaCO₂ 48, PaO₂ 52 on high-flow oxygen. She was emergently admitted to the MICU.
+
+PAST MEDICAL HISTORY
+1. Type 2 diabetes mellitus, 10-year history on metformin and glipizide
+2. Essential hypertension on lisinopril and hydrochlorothiazide
+3. Obesity, BMI 38
+4. Hyperlipidemia on simvastatin
+5. Gastroesophageal reflux disease on omeprazole
+6. No known history of pulmonary disease
+
+PAST SURGICAL HISTORY
+Laparoscopic cholecystectomy age 52. C-section age 28.
+
+MEDICATIONS ON ADMISSION
+1. Metformin 1000 mg orally twice daily
+2. Glipizide 10 mg orally twice daily
+3. Lisinopril 20 mg orally daily
+4. Hydrochlorothiazide 25 mg orally daily
+5. Simvastatin 40 mg orally nightly
+6. Omeprazole 20 mg orally daily
+
+ALLERGIES
+No known drug allergies.
+
+SOCIAL HISTORY
+Works as a school cafeteria supervisor. Lives with her adult daughter. No tobacco use. Rare alcohol — one to two drinks per year at celebrations. No illicit drug use. Originally from Guatemala, has lived in the US for 25 years. Spanish-speaking, medical interpreter used throughout hospitalization. Limited healthcare access historically; last PCP visit was approximately two years prior.
+
+FAMILY HISTORY
+Mother had diabetes and died of stroke. Father had hypertension and coronary artery disease. No known family history of immunodeficiency.
+
+REVIEW OF SYSTEMS
+Positive: fever (39.6°C at home), shaking chills, severe dyspnea at rest, productive cough with rust-colored sputum, right pleuritic chest pain, altered mental status (confusion noted by family), profound fatigue, anorexia, decreased oral intake x48 hours, myalgias.
+Negative: hemoptysis, abdominal pain, diarrhea, urinary symptoms, rash, joint pain, recent travel, sick contacts, recent hospitalizations.
+
+PHYSICAL EXAMINATION ON ADMISSION
+Vital Signs: Temp 39.4°C, BP 96/58 mmHg (hypotensive), HR 122 bpm, RR 32 breaths/min, SpO₂ 72% RA → 88% on HFNC 60L/100% FiO₂, Wt 98 kg
+General: Obese woman in severe respiratory distress. Markedly tachypneic, using all accessory muscles. Altered mental status — responds to voice but disoriented to date and place. Mild central cyanosis.
+HEENT: Dry mucous membranes. Mild central cyanosis of lips. No JVD. No lymphadenopathy. No meningismus.
+Cardiovascular: Tachycardic and regular. No murmurs. Hypotensive.
+Pulmonary: Dullness to percussion right lung base through mid-field. Decreased breath sounds right lower and middle lobes. Coarse crackles right lung field throughout. Egophony at right lung base. Bronchial breath sounds over consolidation. Left lung relatively clear with mild transmitted sounds.
+Abdomen: Soft, non-tender, mildly distended. No organomegaly. Hypoactive bowel sounds.
+Extremities: No significant edema. Peripheral pulses present but weak. Capillary refill approximately 3 seconds.
+Neurological: Responds to verbal stimuli. Disoriented x2 (person, time). Follows simple commands inconsistently. No focal motor deficits. No Babinski. No asterixis.
+
+LABORATORY DATA
+ABG (on HFNC/BIPAP): pH 7.28, PaCO₂ 48 mmHg, PaO₂ 52 mmHg, HCO₃ 22 mEq/L, SpO₂ 88% — acute hypoxemic and partially hypercapnic respiratory failure; P/F ratio 52 consistent with severe ARDS criteria
+CBC: WBC 22.4 K/uL (markedly elevated, 90% PMNs, 8% bands), Hemoglobin 11.8 g/dL, Hematocrit 35.4%, Platelets 96 K/uL (thrombocytopenia, likely sepsis-related)
+BMP: Na 131 mEq/L (hyponatremia), K 3.2 mEq/L, Cl 96 mEq/L, HCO₃ 22 mEq/L, BUN 42 mg/dL, Creatinine 2.1 mg/dL (baseline unknown, likely AKI), Glucose 384 mg/dL (severe hyperglycemia)
+Lactate: 4.2 mmol/L — elevated, consistent with septic shock
+Procalcitonin: 28.4 ng/mL — markedly elevated, consistent with severe bacterial infection
+HbA1c: 10.8% — poorly controlled diabetes
+Blood cultures (x2 sets): Streptococcus pneumoniae, penicillin-susceptible, both bottles positive — bacteremic pneumococcal pneumonia
+Urine Legionella antigen: Negative
+Urine pneumococcal antigen: Positive
+Respiratory viral panel: Negative (influenza A/B, RSV, COVID-19)
+Sputum culture: Streptococcus pneumoniae — concordant with blood cultures
+LFTs: Mildly elevated AST 68, ALT 44 — likely sepsis-related
+Coagulation: PT/INR 1.6, aPTT 44 seconds, fibrinogen 680 — early DIC pattern
+Ferritin: 2,840 ng/mL
+
+IMAGING AND DIAGNOSTICS
+Chest X-Ray (Admission): Right lower lobe and right middle lobe consolidation. Moderate right-sided pleural effusion. No pneumothorax. Left lung relatively preserved. Cardiomegaly borderline.
+CT Chest with IV contrast (Hospital Day 1): Extensive right lower lobe and right middle lobe consolidation consistent with lobar pneumonia. Moderate right-sided parapneumonic pleural effusion without frank empyema (non-loculated, no internal septations). No pulmonary embolism. Left lung with scattered small patchy ground-glass opacities suggesting early bilateral involvement. No mediastinal adenopathy. No cavitation.
+Chest X-Ray (Hospital Day 4): Interval improvement in right-sided consolidation. Reduced pleural effusion. New left lower lobe patchy opacities.
+Chest X-Ray (Day 7, pre-discharge): Significant interval improvement. Residual right lower lobe haziness. Small residual right pleural effusion. Left lower lobe changes resolving.
+Transthoracic Echo (Hospital Day 2): LVEF 55%, preserved. No significant valvular disease. No wall motion abnormality. No pericardial effusion. IVC mildly dilated. Consistent with sepsis-related physiology.
+
+HOSPITAL COURSE
+Ms. Mendez was admitted directly to the MICU for management of severe sepsis/septic shock in the setting of bacteremic pneumococcal pneumonia complicated by acute hypoxemic respiratory failure. Sepsis resuscitation was initiated per protocol with 30 mL/kg IV crystalloid bolus (2.9 L given her weight) over the first three hours, followed by vasopressor initiation with norepinephrine for persistent hypotension despite fluid resuscitation. Blood pressure improved to the 100–110/60–70 mmHg range on norepinephrine within six hours.
+
+Empirical antibiotic therapy was initiated with ceftriaxone 2g IV daily and azithromycin 500 mg IV daily. When blood and sputum cultures confirmed penicillin-susceptible Streptococcus pneumoniae on hospital day 2, azithromycin was discontinued and ceftriaxone was continued as definitive monotherapy. She completed a 10-day course of ceftriaxone IV (transitioned to amoxicillin-clavulanate orally on day 8).
+
+She was managed on BiPAP for the first 36 hours. Given her clinical deterioration with worsening P/F ratio (nadir 48 on hospital day 2) and increased work of breathing, the decision was made on hospital day 2 to proceed with endotracheal intubation and mechanical ventilation using a lung-protective strategy (tidal volume 6 mL/kg ideal body weight, PEEP 12 cmH₂O, plateau pressure <30 cmH₂O, FiO₂ titrated to SpO₂ 92–95%). She was sedated with propofol and fentanyl drips.
+
+Vasopressor support was weaned over hospital days 3–4 as her hemodynamics improved with antibiotics and infection source control. Norepinephrine was discontinued on hospital day 4. Renal function peaked at creatinine 2.6 on day 2 then improved progressively — consistent with sepsis-associated AKI resolving with treatment. No renal replacement therapy was required.
+
+She was successfully extubated on hospital day 5 following a spontaneous breathing trial. Post-extubation, she required supplemental oxygen via nasal cannula at 3L for two days, weaned to room air on hospital day 7. Mental status cleared fully by hospital day 4 after the acute infection was treated. Glucose management was initiated with an insulin drip in the ICU, transitioned to a basal-bolus insulin regimen on the floor. Endocrinology was consulted and adjusted her outpatient diabetes regimen given the markedly elevated HbA1c of 10.8%.
+
+She was ambulatory with physical therapy assistance by hospital day 7 and discharged home with her daughter in stable condition on hospital day 8 with close follow-up arranged.
+
+DISCHARGE DIAGNOSES
+1. Acute respiratory failure with hypoxia — primary admission diagnosis, secondary to pneumococcal pneumonia
+2. Severe community-acquired pneumonia — bacteremic Streptococcus pneumoniae, right lower and middle lobe
+3. Septic shock, resolved
+4. Acute kidney injury, resolved — peak creatinine 2.6, at baseline 1.0 at discharge
+5. Type 2 diabetes mellitus with hyperglycemia — poorly controlled; HbA1c 10.8%
+6. Thrombocytopenia — sepsis-related, resolving
+7. Essential hypertension — active comorbidity
+8. Obesity, BMI 38 — active comorbidity
+9. Hyperlipidemia — active comorbidity
+
+DISCHARGE CONDITION
+Stable. Ambulatory with mild assistance. SpO₂ 96% on room air. Afebrile >72 hours. Mental status at baseline. Tolerating oral diet and medications.
+
+DISCHARGE MEDICATIONS
+1. Amoxicillin-clavulanate 875/125 mg orally twice daily — complete 10-day antibiotic course; 2 days remaining
+2. Insulin glargine 20 units subcutaneously at bedtime — NEW; endocrinology-recommended
+3. Metformin 500 mg orally twice daily — REDUCED dose during recovery; resume 1000 mg BID in 4 weeks per endocrinology
+4. Glipizide 5 mg orally daily — REDUCED dose
+5. Lisinopril 20 mg orally daily — resumed; was held during acute illness
+6. Hydrochlorothiazide 25 mg orally daily — resumed
+7. Simvastatin 40 mg orally nightly — unchanged
+8. Omeprazole 20 mg orally daily — unchanged
+
+DISCHARGE INSTRUCTIONS
+You were very ill with a serious bacterial lung infection (pneumonia) caused by bacteria in your blood, and your lungs were not getting enough oxygen. You needed a breathing tube and intensive care. You have recovered significantly. Complete the antibiotics as prescribed. Take all your medications daily. Your blood sugar was very high during your illness — you now have insulin added to your regimen. Test your blood sugar twice daily and write down the numbers to review with your endocrinologist. If you develop fever above 38.5°C, severe shortness of breath, confusion, or blood sugar above 400, go to the emergency department immediately. Get your pneumococcal and influenza vaccines as soon as you are recovered — ask your primary care doctor.
+
+FOLLOW-UP
+1. Pulmonary Medicine (Dr. Nguyen): 2 weeks post-discharge — repeat chest imaging, lung function assessment
+2. Endocrinology: 2 weeks post-discharge — insulin titration, diabetes management
+3. Primary Care: 1 week post-discharge — medication review, vaccines
+4. Infectious Disease: Outpatient follow-up 2 weeks — review blood culture sensitivities, ensure treatment complete""",
+    },
+    {
+        "title": "Type 2 Diabetes — Severe Hyperglycemia and HHS",
+        "category": "Endocrine",
+        "expected_codes": ["E1165"],
+        "text": """DISCHARGE SUMMARY
+==================
+Patient: Carl Whitfield, 67M | MRN: 5539204
+Admission: 09/02/2025 | Discharge: 09/07/2025 | LOS: 5 days
+Attending: Dr. R. Sharma, MD | Service: Internal Medicine / Endocrinology
+
+CHIEF COMPLAINT
+Confusion, extreme thirst, and weakness for three days; found to have glucose 940 mg/dL and altered mental status in the emergency department.
+
+HISTORY OF PRESENT ILLNESS
+Mr. Whitfield is a 67-year-old man with a ten-year history of type 2 diabetes mellitus managed with oral agents who was brought to the emergency department by his son after three days of worsening confusion, extreme polydipsia, polyuria, generalized weakness, and inability to care for himself. The son reports that his father appeared disoriented at home, did not recognize his address, and was consuming large amounts of water without relief of his thirst. He had not eaten significant solid food for approximately four days. He had not been taking his metformin or glipizide for at least one week — he ran out of both medications and told his son he felt too ill to go to the pharmacy.
+
+On further history, the patient has had progressively worsening hyperglycemic symptoms over two to three weeks including polydipsia, polyuria estimated at 10–15 voidings per day, blurred vision, fatigue, and a 15-pound unintentional weight loss over the past month. He denies fever, chest pain, shortness of breath, or abdominal pain. He endorses nausea but no vomiting. He has no prior history of diabetic ketoacidosis or hyperosmolar hyperglycemic state. He has not received any new medications and denies glucocorticoid use.
+
+On arrival to the emergency department, his blood glucose was 940 mg/dL, serum sodium 148 mEq/L (corrected sodium approximately 158 mEq/L), serum osmolality calculated at 368 mOsm/kg, and pH 7.38 (no significant acidosis). Urine ketones trace. He was alert but disoriented to time and place. He was markedly dehydrated on examination with tachycardia at 118 bpm and blood pressure 88/54 mmHg (sepsis-like hypotension from profound dehydration). He was admitted to a monitored bed for management of hyperosmolar hyperglycemic state (HHS).
+
+PAST MEDICAL HISTORY
+1. Type 2 diabetes mellitus, diagnosed 10 years ago, previously managed with metformin and glipizide
+2. Essential hypertension on lisinopril
+3. Hyperlipidemia on atorvastatin
+4. Obesity, BMI 33
+5. Prior episodes of poorly controlled diabetes with HbA1c > 9% documented on two prior occasions in the past three years, each time associated with medication non-adherence
+6. Benign prostatic hyperplasia on tamsulosin
+
+PAST SURGICAL HISTORY
+No significant surgical history.
+
+MEDICATIONS ON ADMISSION
+1. Metformin 1000 mg orally twice daily — not taking for at least one week
+2. Glipizide 10 mg orally twice daily — not taking for at least one week
+3. Lisinopril 10 mg orally daily
+4. Atorvastatin 40 mg orally nightly
+5. Tamsulosin 0.4 mg orally nightly
+
+ALLERGIES
+Sulfonamides (rash).
+
+SOCIAL HISTORY
+Retired postal worker. Widowed, lives alone in a single-story home. One adult son lives locally. Former smoker, 20 pack-year history, quit 15 years ago. Occasional alcohol, one to two drinks weekly. No illicit drug use. Fixed income, Medicare coverage. Has difficulty accessing pharmacy due to lack of consistent transportation. History of food insecurity noted — son reports father has limited food variety at home.
+
+FAMILY HISTORY
+Mother had type 2 diabetes. Father had hypertension and died of ischemic heart disease at age 72. One sibling with type 2 diabetes.
+
+REVIEW OF SYSTEMS
+Positive: polydipsia, polyuria (estimated 10–15 voids daily for 2–3 weeks), blurred vision, confusion (3 days), generalized weakness, fatigue, anorexia, nausea, 15-lb unintentional weight loss over past month.
+Negative: vomiting, abdominal pain, chest pain, shortness of breath, fever, chills, productive cough, diarrhea, focal neurological deficits, headache, seizure activity, skin breakdown, lower extremity ulcers.
+
+PHYSICAL EXAMINATION ON ADMISSION
+Vital Signs: Temp 37.2°C, BP 88/54 mmHg (hypotensive), HR 118 bpm, RR 18 breaths/min, SpO₂ 97% RA, Wt 87 kg
+General: Obese older man, appearing fatigued and mildly confused. Markedly dry mucous membranes. Skin tenting present. Speaks slowly but follows commands.
+HEENT: Dry oral mucosa. Sunken eyes. Mucous membranes parched. No JVD. No thyromegaly.
+Cardiovascular: Tachycardic, regular. No murmurs. Hypotensive.
+Pulmonary: Clear to auscultation bilaterally. No wheeze, crackles, or rhonchi. Respiratory effort unlabored, no Kussmaul breathing (distinguishes from DKA).
+Abdomen: Soft, mildly tender diffusely without guarding or rebound. No organomegaly. Hypoactive bowel sounds. No peritoneal signs.
+Extremities: No lower extremity edema. No active ulcers or wounds. Decreased skin turgor. Peripheral pulses present but weak. Capillary refill 3–4 seconds.
+Neurological: Alert but disoriented to date and location. Follows simple commands. Slow responses. No focal motor deficits. No Babinski. Cranial nerves grossly intact.
+
+LABORATORY DATA
+Point-of-care glucose: 940 mg/dL — critically elevated
+BMP (Admission): Na 148 mEq/L (hypernatremia), K 3.8 mEq/L, Cl 108 mEq/L, HCO₃ 24 mEq/L (normal — no significant acidosis), BUN 68 mg/dL, Creatinine 2.8 mg/dL (baseline unknown), Glucose 940 mg/dL
+Corrected sodium (for hyperglycemia): Na corrected = 148 + 1.6 × [(940–100)/100] = ~162 mEq/L — severe hypernatremia when corrected
+Calculated serum osmolality: 2 × 148 + 940/18 + 68/2.8 = approximately 370 mOsm/kg — severely elevated (HHS threshold >320)
+ABG: pH 7.38, PaCO₂ 38 mmHg, PaO₂ 92 mmHg, HCO₃ 22 mEq/L — no significant acidosis; confirms HHS rather than DKA
+Serum ketones: Trace — consistent with HHS (mild ketonemia from starvation, not DKA)
+Urine ketones: Trace
+CBC: WBC 14.2 K/uL (mildly elevated — likely stress/dehydration response), Hemoglobin 16.8 g/dL (hemoconcentration), Hematocrit 50.4%, Platelets 312 K/uL
+HbA1c: 13.4% — severely uncontrolled; consistent with months of poor glycemic control
+Lactate: 2.1 mmol/L — mildly elevated, likely from hypoperfusion and dehydration
+Troponin I: <0.02 — negative
+Urinalysis: Specific gravity 1.040 (markedly concentrated), 4+ glucose, no leukocyte esterase, no nitrites — no UTI to suggest precipitating infection
+Blood cultures (x2): No growth at 72 hours
+LFTs: Within normal limits
+Lipase: 28 (normal)
+Phosphorus: 2.1 mg/dL (hypophosphatemia on repletion anticipated)
+
+Hospital Day 2 BMP: Na 142, K 3.6, BUN 48, Cr 1.8, Glucose 420 — improving with rehydration and insulin
+Hospital Day 4 BMP: Na 140, K 4.0, BUN 26, Cr 1.2, Glucose 188 — near normalization
+Discharge BMP: Na 139, K 4.1, BUN 20, Cr 1.0, Glucose 162 — at estimated baseline
+
+IMAGING AND DIAGNOSTICS
+Chest X-Ray (Admission): No acute cardiopulmonary process. No pneumonia. No pulmonary edema. Normal cardiac silhouette.
+12-Lead ECG (Admission): Sinus tachycardia at 118 bpm. No acute ST changes. No peaked T-waves (hyperkalemia excluded). No QTc prolongation. No ischemic changes.
+CT Head without contrast (Hospital Day 1, due to altered mental status): No acute intracranial abnormality. No hemorrhage. No large territorial infarct. Mild cortical atrophy appropriate for age.
+Right lower extremity Doppler ultrasound (Day 2, due to mild right calf swelling): No deep vein thrombosis identified.
+
+HOSPITAL COURSE
+Mr. Whitfield was admitted to a monitored internal medicine bed with telemetry and hourly glucose monitoring for management of hyperosmolar hyperglycemic state. Aggressive IV fluid resuscitation was initiated as the cornerstone of HHS management. Given his estimated free water deficit of approximately 9–10 liters (calculated using corrected sodium and body weight), he was started on 0.9% normal saline at 1 liter per hour for the first two hours, then transitioned to 0.45% half-normal saline at 500 mL/hour targeting a reduction in serum osmolality of no more than 3 mOsm/kg/hour to avoid cerebral edema. His blood pressure improved to 108/68 mmHg after the initial two-liter fluid bolus and vasopressors were not required.
+
+An insulin drip was initiated at 0.1 units/kg/hour (8.7 units/hour) once the serum potassium was confirmed at 3.8 mEq/L and IV fluids were running. Glucose was checked hourly and the insulin drip rate adjusted per protocol to target glucose reduction of 50–75 mg/dL/hour. Glucose decreased from 940 to 620 mg/dL in the first six hours. When glucose reached 300 mg/dL on hospital day 2, dextrose was added to the IV fluid to prevent hypoglycemia while continuing insulin to clear any residual ketonemia.
+
+Electrolytes were monitored every four hours during active treatment. Potassium supplementation was administered proactively as expected with insulin therapy and hydration; potassium remained in the range of 3.6–4.2 mEq/L throughout. Phosphorus dropped to 1.8 mg/dL on day 2 and was repleted with IV sodium phosphate per protocol. Magnesium was also repleted as needed.
+
+Mental status improved substantially by hospital day 2 after approximately 12 hours of IV fluid resuscitation and glucose reduction. By day 3 he was oriented x3, engaging in appropriate conversation, and able to participate in diabetes education. The insulin drip was transitioned to subcutaneous basal-bolus insulin therapy on hospital day 3 (glargine 30 units at bedtime + lispro sliding scale with meals) with continued glucose monitoring every four hours. Endocrinology was consulted and recommended a regimen of glargine plus low-dose glipizide with plan to reassess the need for insulin at 3-month follow-up based on outpatient glucose logs.
+
+A diabetes educator and pharmacist met with the patient and his son on hospital days 3 and 4. Insulin injection technique, glucometer use, hypoglycemia recognition and treatment, sick day management, and the critical importance of medication adherence were reviewed extensively. The son was educated and expressed willingness to assist with pharmacy pickup and medication monitoring. A social work consult was placed and a connection to a community health worker program was arranged for ongoing support. A 90-day supply of glipizide and metformin was filled via the hospital's charity pharmacy program prior to discharge.
+
+DISCHARGE DIAGNOSES
+1. Type 2 diabetes mellitus with hyperglycemia, hyperosmolar hyperglycemic state — primary admission diagnosis
+2. Severe dehydration, resolved with IV fluid resuscitation
+3. Acute kidney injury, resolved — peak creatinine 2.8, at baseline at discharge
+4. Hypernatremia, resolved
+5. Hypophosphatemia, repleted
+6. Medication non-adherence — primary precipitating factor
+7. Essential hypertension — active comorbidity
+8. Hyperlipidemia — active comorbidity
+9. Benign prostatic hyperplasia — active comorbidity
+10. Obesity — active comorbidity
+
+DISCHARGE CONDITION
+Stable. Alert and oriented x3 at baseline. Ambulatory without assistance. Blood glucose 162 on morning of discharge. Tolerating oral diet. No IV access required.
+
+DISCHARGE MEDICATIONS
+1. Insulin glargine 30 units subcutaneously at bedtime — NEW
+2. Lispro insulin 4 units subcutaneously with each meal — NEW (with sliding scale guidance provided)
+3. Glipizide 5 mg orally daily with breakfast — REDUCED from 10 mg twice daily
+4. Metformin 500 mg orally twice daily — REDUCED dose; increase to 1000 mg BID in 4 weeks if tolerated
+5. Lisinopril 10 mg orally daily — resumed
+6. Atorvastatin 40 mg orally nightly — unchanged
+7. Tamsulosin 0.4 mg orally nightly — unchanged
+
+DISCHARGE INSTRUCTIONS
+You were admitted because your blood sugar was dangerously high (over 900) and you were severely dehydrated. This happened because you ran out of your diabetes medications. Never stop your diabetes medications without talking to your doctor. You now have insulin added to your regimen — your son has been taught how to help you give injections. Check your blood sugar every morning before eating and before bedtime. Write down every result. If your blood sugar is above 400, call your doctor or go to the emergency room. If you feel shaky, sweaty, or confused, eat 15 grams of fast-acting carbohydrate (4 glucose tablets or half a cup of juice) immediately. Drink water throughout the day. Keep all follow-up appointments — they are essential to adjusting your medications.
+
+FOLLOW-UP
+1. Endocrinology: 2 weeks post-discharge — insulin titration, HbA1c recheck at 3 months
+2. Primary Care: 1 week post-discharge — blood pressure, kidney function, medication review
+3. Diabetes Education (outpatient): Arranged, within 2 weeks
+4. Social Work / Community Health Worker: Enrolled — first home visit within one week""",
+    },
+    {
+        "title": "Type 2 Diabetes with Diabetic Chronic Kidney Disease",
+        "category": "Endocrine / Nephrology",
+        "expected_codes": ["E1122"],
+        "text": """DISCHARGE SUMMARY
+==================
+Patient: Patricia Nguyen, 59F | MRN: 7203841
+Admission: 08/18/2025 | Discharge: 08/23/2025 | LOS: 5 days
+Attending: Dr. M. Clarke, MD | Service: Internal Medicine / Nephrology
+
+CHIEF COMPLAINT
+Worsening leg swelling, decreased urine output, and elevated creatinine found on outpatient labs prompting urgent admission.
+
+HISTORY OF PRESENT ILLNESS
+Ms. Nguyen is a 59-year-old woman with a 15-year history of type 2 diabetes mellitus, hypertension, and known stage 3b chronic kidney disease (eGFR baseline 38 mL/min/1.73m²) who presents following a call from her nephrologist after outpatient labs showed creatinine 3.1 mg/dL (baseline 1.8–2.0) and potassium 5.8 mEq/L with a concurrent increase in urine albumin-to-creatinine ratio to 1,480 mg/g (prior value 680 mg/g six months ago). She endorses a three-week history of progressive bilateral leg swelling significantly worse than her usual mild ankle edema, decreased urine output over the past ten days, and facial puffiness noted by her family for the past week. She also reports new exertional dyspnea with one flight of stairs that she previously climbed without difficulty.
+
+She denies fever, chills, gross hematuria, flank pain, or urinary symptoms. She has not started any new medications. She did use ibuprofen approximately three to four times weekly for knee pain over the past month — a practice she acknowledges was against her nephrologist's standing instruction to avoid NSAIDs. She has been adherent to her other medications. She has not had any contrast studies. She has had no recent diarrhea, vomiting, or poor oral intake. She has not changed her diet significantly, though she acknowledges her sodium intake has been higher than usual at family meals. She has no history of nephrotic syndrome or nephritic syndrome previously evaluated.
+
+Her diabetes has been suboptimally controlled over the past year with HbA1c values ranging from 8.2 to 9.0%. She has had diabetic nephropathy as the presumed etiology of her CKD based on diabetic retinopathy confirmed by ophthalmology, absent hematuria, and a non-invasive clinical picture consistent with diabetic glomerulosclerosis. A kidney biopsy was performed three years ago confirming Class IIb diabetic nephropathy on the Tervaert classification.
+
+PAST MEDICAL HISTORY
+1. Type 2 diabetes mellitus, 15-year history; history of poor glycemic control
+2. Chronic kidney disease Stage 3b, eGFR baseline 38, secondary to diabetic nephropathy confirmed on biopsy
+3. Hypertension, 12-year history
+4. Diabetic retinopathy — non-proliferative, managed by ophthalmology
+5. Peripheral diabetic neuropathy — bilateral lower extremities
+6. Hyperlipidemia on atorvastatin
+7. Anemia of chronic kidney disease, managed with iron supplementation
+8. Obesity, BMI 36
+
+PAST SURGICAL HISTORY
+Kidney biopsy three years ago (percutaneous, uncomplicated). Hysterectomy age 44.
+
+MEDICATIONS ON ADMISSION
+1. Metformin 500 mg orally twice daily (dose-reduced for CKD; eGFR 38 permits continued use)
+2. Glipizide 5 mg orally daily
+3. Lisinopril 40 mg orally daily
+4. Amlodipine 10 mg orally daily
+5. Atorvastatin 40 mg orally nightly
+6. Furosemide 40 mg orally daily
+7. Ferrous sulfate 325 mg orally twice daily
+8. Sodium bicarbonate 650 mg orally three times daily (for CKD-associated metabolic acidosis)
+9. Calcium carbonate 500 mg orally with meals (phosphate binding)
+10. Ibuprofen 400 mg orally as needed — patient using 3–4x/week (NSAID use against medical advice)
+
+ALLERGIES
+Penicillin (rash, childhood history). ACE inhibitor cough was noted but patient prefers to continue lisinopril given renoprotective benefit; cough present but tolerable.
+
+SOCIAL HISTORY
+Works part-time as a medical records clerk. Lives with her husband and one adult child. Nonsmoker. No alcohol use. No illicit drug use. Vietnamese-American; diet higher in rice and some salted preserved foods. Medical interpreter available as needed (English proficient but family uses Vietnamese at home). Medicare and Medicaid dual coverage.
+
+FAMILY HISTORY
+Mother had type 2 diabetes and died of end-stage renal disease on dialysis at age 71. Father had hypertension and coronary artery disease. One sibling with type 2 diabetes.
+
+REVIEW OF SYSTEMS
+Positive: bilateral lower extremity edema (worsening 3 weeks), facial edema (1 week), decreased urine output (10 days), exertional dyspnea (1 flight of stairs, new), fatigue, generalized weakness.
+Negative: fever, chills, chest pain at rest, orthopnea, paroxysmal nocturnal dyspnea, gross hematuria, flank pain, dysuria, frequency, nausea, vomiting, diarrhea, joint pain beyond chronic knee OA, rash, weight gain >2 lbs (she doesn't weigh herself routinely).
+
+PHYSICAL EXAMINATION ON ADMISSION
+Vital Signs: Temp 36.8°C, BP 164/96 mmHg, HR 84 bpm, RR 18 breaths/min, SpO₂ 95% RA, Wt 98.4 kg (prior visit 94.1 kg — approximately 4.3 kg weight gain over past 6 weeks)
+General: Obese woman in no acute distress at rest. Alert and oriented x3. Mild periorbital puffiness.
+HEENT: Periorbital edema present bilaterally. Oral mucosa moist. No JVD at 45 degrees. No lymphadenopathy.
+Cardiovascular: Regular rate and rhythm. S1 and S2. No S3 or S4. No murmurs. No rubs.
+Pulmonary: Mild dullness to percussion at bilateral bases. Fine inspiratory crackles at bilateral lung bases. No wheeze. Respiratory effort unlabored.
+Abdomen: Soft, non-tender, mildly distended. No organomegaly. Shifting dullness present (ascites possible vs bowel). Normoactive bowel sounds.
+Extremities: 3+ pitting edema bilateral lower extremities to the mid-shin. Mild pretibial edema. Skin intact, no open wounds. Pulses 2+ bilaterally. Diminished monofilament sensation bilateral feet (consistent with known neuropathy).
+Neurological: Alert and oriented. No focal deficits. Absent Achilles reflexes bilaterally (peripheral neuropathy).
+
+LABORATORY DATA
+Admission BMP: Na 138 mEq/L, K 5.8 mEq/L (hyperkalemia), Cl 104 mEq/L, HCO₃ 18 mEq/L (metabolic acidosis), BUN 62 mg/dL, Creatinine 3.1 mg/dL (worsened from baseline 1.8–2.0), Glucose 198 mg/dL
+eGFR (CKD-EPI): 17 mL/min/1.73m² — acutely worsened, consistent with AKI on CKD
+Urine albumin-to-creatinine ratio: 1,480 mg/g — markedly worsened from 680 mg/g six months prior
+HbA1c: 8.9% — suboptimally controlled
+CBC: WBC 7.8 K/uL, Hemoglobin 9.4 g/dL (anemia of CKD), Hematocrit 28.2%, MCV 82 fL (normocytic), Platelets 222 K/uL
+Serum albumin: 2.8 g/dL — hypoalbuminemia, consistent with nephrotic-range proteinuria
+Parathyroid hormone (intact iPTH): 182 pg/mL — elevated, consistent with secondary hyperparathyroidism of CKD
+25-OH Vitamin D: 14 ng/mL — deficient
+Phosphorus: 5.4 mg/dL (hyperphosphatemia)
+ECG: Sinus rhythm, PR interval 180 ms, peaked T-waves in precordial leads — concerning for hyperkalemia; repeat ECG after kayexalate showed improvement
+Urine sodium: 62 mEq/L (elevated, suggesting intrinsic renal disease rather than prerenal)
+Urine protein/creatinine ratio: 4.2 — nephrotic range
+Spot urine microscopy: No casts, no RBCs — consistent with diabetic nephropathy rather than glomerulonephritis
+
+Hospital Day 3 BMP: Na 138, K 4.8, BUN 48, Cr 2.4, HCO₃ 20 — improving with NSAID cessation and diuresis
+Discharge BMP: Na 139, K 4.6, BUN 40, Cr 2.0, HCO₃ 22 — approaching baseline
+
+IMAGING AND DIAGNOSTICS
+Renal Ultrasound (Hospital Day 1): Right kidney 9.8 cm, left kidney 10.1 cm. Bilateral diffusely echogenic kidneys consistent with chronic medical renal disease (prior documented). No hydronephrosis. No renal calculi. No cysts. Normal corticomedullary differentiation preserved though diminished. No focal lesion.
+Chest X-Ray (Admission): Mild cardiomegaly. Bilateral pleural effusions, small. Mild pulmonary vascular congestion. No lobar pneumonia.
+12-Lead ECG (Admission): Normal sinus rhythm. Peaked T-waves V2–V5 — hyperkalemia pattern. PR interval 188 ms. No ST changes. After treatment on day 2: peaked T-waves resolved.
+Echocardiogram (Hospital Day 2): LVEF 58%, preserved. Left ventricular hypertrophy, concentric. Grade II diastolic dysfunction. Mild mitral and tricuspid regurgitation. Estimated RVSP 38 mmHg. No pericardial effusion. Bilateral small pleural effusions confirmed.
+
+HOSPITAL COURSE
+Ms. Nguyen was admitted for management of acute-on-chronic kidney disease superimposed on her established diabetic nephropathy with hyperkalemia, hypoalbuminemia, and fluid overload. NSAIDs were immediately discontinued on admission as the most likely precipitant of AKI on CKD given her documented ibuprofen use over the preceding month. All nephrotoxic medications were reviewed and metformin was held pending improvement in creatinine below 1.8 mg/dL.
+
+Hyperkalemia (K 5.8) with ECG changes was managed urgently with calcium gluconate 1g IV for membrane stabilization, sodium bicarbonate 50 mEq IV, regular insulin 10 units IV with dextrose 25g, and patiromer 8.4g orally daily initiated as a long-term potassium binder. The home sodium bicarbonate dose was increased to correct ongoing metabolic acidosis. Potassium decreased to 5.1 by day 2 and 4.6 by discharge, with resolution of ECG changes.
+
+Diuresis was optimized with IV furosemide 80 mg twice daily for the first three days, transitioning to oral furosemide 80 mg twice daily on day 4. A net negative fluid balance of 0.8–1.2 liters daily was achieved. Weight decreased from 98.4 kg to 95.0 kg by discharge. Bilateral pleural effusions reduced significantly on repeat chest imaging.
+
+Nephrology co-managed the patient throughout the admission. Creatinine improved from 3.1 to 2.0 mg/dL with NSAID cessation and appropriate diuresis. The team counseled the patient extensively and firmly about lifetime NSAID avoidance given her CKD stage, the irreversibility of further nephron loss, and the trajectory toward end-stage renal disease. The patient acknowledged her error and agreed to use acetaminophen for pain management going forward. Tramadol at reduced doses was offered as an alternative for breakthrough pain. A frank conversation regarding CKD progression, the anticipated need for renal replacement therapy planning within two to three years, and options for peritoneal vs. hemodialysis vs. renal transplant was initiated.
+
+Vitamin D deficiency was treated with ergocalciferol 50,000 IU weekly for 8 weeks. Phosphate binder calcium carbonate was continued and sevelamer was added given persistent hyperphosphatemia. iPTH management was deferred to outpatient nephrology. Anemia of CKD (Hgb 9.4) was evaluated — ferritin was 280 ng/mL and TSAT 22%, suggesting iron-adequate anemia; nephrology recommended outpatient consideration of erythropoiesis-stimulating agent.
+
+DISCHARGE DIAGNOSES
+1. Type 2 diabetes mellitus with diabetic chronic kidney disease — primary diagnosis, NSAID-precipitated acute-on-chronic exacerbation
+2. Acute kidney injury superimposed on CKD Stage 3b — creatinine peak 3.1 from baseline 1.8, secondary to NSAID nephrotoxicity
+3. Hyperkalemia, resolved — managed with membrane stabilization, redistribution, and patiromer
+4. Nephrotic-range proteinuria — worsened, UACR 1,480 mg/g
+5. Metabolic acidosis — partially corrected
+6. Hypertension, uncontrolled — contributing to CKD progression
+7. Anemia of chronic kidney disease — stable
+8. Secondary hyperparathyroidism — outpatient management
+9. Hyperlipidemia — active comorbidity
+10. Obesity — active comorbidity
+
+DISCHARGE CONDITION
+Improved but not at baseline. Creatinine 2.0 approaching but not yet at prior baseline of 1.8. Potassium 4.6. Volume status improved with partial resolution of edema. Ambulatory without assistance. Tolerating oral diet.
+
+DISCHARGE MEDICATIONS
+1. Furosemide 80 mg orally twice daily — increased from 40 mg daily
+2. Patiromer (Veltassa) 8.4g orally daily with food — NEW potassium binder; do not take within 3 hours of other medications
+3. Lisinopril 40 mg orally daily — continued; hold if Cr rises above 3.0 and call doctor
+4. Amlodipine 10 mg orally daily — continued
+5. Sevelamer 800 mg orally three times daily with meals — NEW phosphate binder
+6. Calcium carbonate 500 mg orally twice daily with meals (reduced from three times daily)
+7. Sodium bicarbonate 650 mg orally three times daily — continued
+8. Ergocalciferol 50,000 IU orally weekly — NEW, 8-week course
+9. Atorvastatin 40 mg orally nightly — continued
+10. Ferrous sulfate 325 mg orally twice daily — continued
+11. Glipizide 5 mg orally daily — continued
+12. Metformin HELD — resume only when creatinine returns to baseline and nephrologist approves
+
+DISCHARGE INSTRUCTIONS
+You were admitted because your kidneys got worse, partly because you were using ibuprofen (a pain reliever that damages kidneys). You must never take ibuprofen, naproxen, aspirin for pain, or any other non-steroidal anti-inflammatory pain medication again — these medications cause serious kidney damage. For pain, use only acetaminophen (Tylenol) up to 2 grams daily unless your doctor says otherwise. Weigh yourself every morning. If you gain more than 2 pounds in one day, call your nephrologist. Take all medications as prescribed. Do not skip your blood pressure pills. Keep all nephrology appointments — your kidneys are being closely monitored and the team is preparing a plan for your future kidney care.
+
+FOLLOW-UP
+1. Nephrology (primary): 1 week post-discharge — creatinine recheck, volume status, patiromer adjustment
+2. Primary Care / Endocrinology: 2 weeks — HbA1c, metformin restart discussion, diabetes management
+3. Ophthalmology: Scheduled in 4 weeks — annual diabetic retinopathy screening
+4. CKD Education Class: Enrolled — starts in 3 weeks (RRT planning, dietary counseling, transplant evaluation)""",
+    },
     # NOTES_PLACEHOLDER
 ]
 
