@@ -49,3 +49,8 @@ Thumbs.db
 *.tmp
 coverage/
 .nyc_output/
+
+# MIMIC seed data — not for source control
+scripts/sample_notes_seed.json
+scripts/_reseed_from_mimic.py
+.claude/worktrees/
