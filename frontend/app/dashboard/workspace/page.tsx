@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Zap, Clock, MessageSquare } from "lucide-react"
+import { Zap, Clock, MessageSquare, FileText, Sparkles } from "lucide-react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { NoteInput } from "@/components/workspace/note-input"
 import { PredictionsList } from "@/components/workspace/predictions-list"
@@ -50,6 +50,7 @@ function toAttributions(data: PredictResponse) {
 }
 
 const DIAGNOSIS_LIST_LIMIT = 5
+const EXPECTED_INFERENCE_SEC = 60
 
 // ── Page ──────────────────────────────────────────────────────────────────
 
@@ -61,6 +62,22 @@ export default function WorkspacePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
   const [selectedTab, setSelectedTab] = useState("diagnoses")
+  const [elapsedSec, setElapsedSec] = useState(0)
+
+  useEffect(() => {
+    if (!isLoading) {
+      setElapsedSec(0)
+      return
+    }
+    const start = Date.now()
+    setElapsedSec(0)
+    const id = setInterval(() => {
+      setElapsedSec(Math.floor((Date.now() - start) / 1000))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [isLoading])
+
+  const progressPct = Math.min(95, Math.round((elapsedSec / EXPECTED_INFERENCE_SEC) * 100))
 
   const handleAnalyze = async (note: string) => {
     setIsLoading(true)
@@ -113,7 +130,7 @@ export default function WorkspacePage() {
 
         {/* Results Panel */}
         {errorMsg ? (
-          <GlassCard className="flex flex-col items-center justify-center min-h-[600px]">
+          <GlassCard key="error" className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in">
             <div className="text-center space-y-3">
               <div className="w-16 h-16 rounded-2xl bg-destructive/20 flex items-center justify-center mx-auto">
                 <Zap className="w-8 h-8 text-destructive" />
@@ -129,29 +146,74 @@ export default function WorkspacePage() {
             </div>
           </GlassCard>
         ) : !result && !isLoading ? (
-          <GlassCard className="flex flex-col items-center justify-center min-h-[600px]">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-2xl rounded-full" />
-              <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
-                <Zap className="w-8 h-8 text-primary" />
+          <GlassCard key="empty" className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in">
+            <div className="text-center space-y-5 max-w-sm px-6">
+              <div className="relative mx-auto w-fit">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-2xl rounded-full" />
+                <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
+                  <Zap className="w-8 h-8 text-primary" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-foreground font-medium text-lg">Ready to Analyze</h3>
+                <p className="text-foreground-muted text-sm leading-relaxed">
+                  Paste a discharge summary or progress note on the left and click Analyze to surface ICD-10 predictions, activated concepts, and attribution.
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-4 pt-2 text-xs text-foreground-muted">
+                <span className="inline-flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" />
+                  Clinical note
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  BioClinicalBERT
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  ~{EXPECTED_INFERENCE_SEC}s
+                </span>
               </div>
             </div>
-            <h3 className="text-foreground font-medium mt-6">Ready to Analyze</h3>
-            <p className="text-foreground-muted text-sm mt-1">Enter a clinical note to get started</p>
           </GlassCard>
         ) : isLoading ? (
-          <GlassCard className="flex flex-col items-center justify-center min-h-[600px]">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-2xl rounded-full animate-pulse" />
-              <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <GlassCard key="loading" className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in">
+            <div className="w-full max-w-sm space-y-6 text-center px-6">
+              <div className="relative mx-auto w-fit">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-2xl rounded-full animate-pulse" />
+                <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
+                  <Zap className="w-8 h-8 text-primary" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-foreground font-medium">Analyzing Note</h3>
+                <p className="text-foreground-muted text-sm">Running BioClinicalBERT inference…</p>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-baseline justify-center gap-2">
+                  <span className="text-3xl font-semibold tabular-nums text-foreground">{elapsedSec}</span>
+                  <span className="text-sm text-foreground-muted">seconds elapsed</span>
+                </div>
+                <p className="text-xs text-foreground-muted">Typically takes ~{EXPECTED_INFERENCE_SEC}s</p>
+              </div>
+              <div
+                className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={progressPct}
+                aria-label="Inference progress"
+              >
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full bg-primary/60 transition-[width] duration-1000 ease-linear"
+                  style={{ width: `${progressPct}%` }}
+                />
+                <div className="absolute inset-0 animate-shimmer rounded-full" />
               </div>
             </div>
-            <h3 className="text-foreground font-medium mt-6">Analyzing Note</h3>
-            <p className="text-foreground-muted text-sm mt-1">Running BioClinicalBERT inference...</p>
           </GlassCard>
         ) : (
-          <GlassCard className="space-y-6">
+          <GlassCard key="result" className="space-y-6 animate-fade-in">
             {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-white/[0.06]">
               <div>
