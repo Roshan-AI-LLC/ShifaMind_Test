@@ -7,7 +7,7 @@ import uuid
 # ── Predict ──────────────────────────────────────────────────────────────────
 
 class PredictRequest(BaseModel):
-    text: str = Field(..., min_length=10, max_length=10000)
+    text: str = Field(..., min_length=10, max_length=50000)
     apply_tuned_thresholds: bool = True
 
 
