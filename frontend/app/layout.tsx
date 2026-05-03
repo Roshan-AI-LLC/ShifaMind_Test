@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'ShifaMind - Clinical AI Diagnosis Platform',
-  description: 'AI-powered clinical decision support using BioClinicalBERT for ICD-10 diagnosis prediction',
+  description: 'AI-powered clinical decision support using ShifaMind for ICD-10 diagnosis prediction',
   generator: 'v0.app',
   icons: {
     icon: [

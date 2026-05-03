@@ -167,7 +167,7 @@ export default function WorkspacePage() {
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" />
-                  BioClinicalBERT
+                  ShifaMind
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5" />
@@ -187,7 +187,7 @@ export default function WorkspacePage() {
               </div>
               <div className="space-y-1">
                 <h3 className="text-foreground font-medium">Analyzing Note</h3>
-                <p className="text-foreground-muted text-sm">Running BioClinicalBERT inference…</p>
+                <p className="text-foreground-muted text-sm">Running ShifaMind inference…</p>
               </div>
               <div className="space-y-1">
                 <div className="flex items-baseline justify-center gap-2">

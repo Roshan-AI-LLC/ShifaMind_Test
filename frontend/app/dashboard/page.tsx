@@ -124,7 +124,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <p className="text-foreground-muted text-sm">
-              BioClinical ModernBERT • 160 concepts • 50 ICD-10 codes
+              ShifaMind • 160 concepts • 50 ICD-10 codes
             </p>
           </div>
           <span className="hidden sm:inline-flex px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
