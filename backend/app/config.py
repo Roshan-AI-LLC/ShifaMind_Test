@@ -39,7 +39,7 @@ class Settings(BaseSettings):
 
     # App
     SECRET_KEY: str = "change-me-in-production"
-    CORS_ORIGINS: str = "https://platform.shifamind.me,http://localhost:3000"
+    CORS_ORIGINS: str = "https://platform.roshan-ai.com,https://platform.shifamind.me,http://localhost:3000"
 
     @property
     def cors_origins_list(self) -> list[str]:

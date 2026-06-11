@@ -60,6 +60,7 @@ const basePath = (process.env.NEXT_PUBLIC_BASE_PATH || parentEnv.NEXT_PUBLIC_BAS
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  devIndicators: false,
   ...(basePath ? { basePath, assetPrefix: basePath } : {}),
   env: { ...publicEnvFromParent(), NEXT_PUBLIC_BASE_PATH: basePath },
   images: {
