@@ -2,17 +2,17 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
+
 export const metadata: Metadata = {
   title: 'ShifaMind — Concept-grounded ICD-10 coding',
   description:
     'A Roshan AI product. ShifaMind reads a clinical note and returns ranked ICD-10 codes with the concept evidence behind each one.',
   icons: {
     icon: [
-      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: `${basePath}/icon.svg`, type: 'image/svg+xml' },
+      { url: `${basePath}/icon.png`, type: 'image/png' },
     ],
-    apple: '/apple-icon.png',
   },
 }
 
