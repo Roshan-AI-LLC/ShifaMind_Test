@@ -78,20 +78,25 @@ export function Sidebar({ isAdmin = false, isMobileOpen = false, onMobileClose }
             <div className="flex items-center justify-center w-8 h-8">
               <img src="/icon_transparent.png" className="w-full h-full object-contain" alt="ShifaMind Logo" />
             </div>
-            <span 
+            <span
               className={cn(
-                "font-semibold text-lg text-foreground whitespace-nowrap transition-opacity duration-200",
+                "flex flex-col whitespace-nowrap transition-opacity duration-200",
                 isExpanded || isMobileOpen ? "opacity-100" : "opacity-0 lg:hidden"
               )}
             >
-              ShifaMind
+              <span className="font-display font-semibold text-lg leading-none tracking-[-0.02em] text-foreground">
+                ShifaMind
+              </span>
+              <span className="text-[0.6rem] uppercase tracking-[0.14em] text-foreground-subtle mt-1">
+                A Roshan AI product
+              </span>
             </span>
           </Link>
           
           {/* Mobile close button */}
           <button
             onClick={onMobileClose}
-            className="ml-auto lg:hidden p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
+            className="ml-auto lg:hidden p-2 rounded-lg hover:bg-secondary transition-colors"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5 text-foreground-muted" />
@@ -116,7 +121,7 @@ export function Sidebar({ isAdmin = false, isMobileOpen = false, onMobileClose }
                   onClick={onMobileClose}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150",
-                    "hover:bg-white/[0.06]",
+                    "hover:bg-secondary",
                     isActive && "bg-sidebar-accent border-l-2 border-primary"
                   )}
                 >

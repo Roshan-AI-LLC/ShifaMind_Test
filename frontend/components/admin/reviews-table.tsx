@@ -59,8 +59,8 @@ export function ReviewsTable() {
   if (!data) {
     return (
       <GlassCard className="space-y-6 animate-pulse">
-        <div className="h-6 w-48 bg-white/[0.04] rounded" />
-        <div className="h-64 bg-white/[0.04] rounded-lg mt-4" />
+        <div className="h-6 w-48 bg-muted rounded" />
+        <div className="h-64 bg-muted rounded-lg mt-4" />
       </GlassCard>
     )
   }
@@ -78,7 +78,7 @@ export function ReviewsTable() {
           <p className="text-sm text-foreground-muted mt-1">{data.total} feedback entries</p>
         </div>
         {reviews.length > 0 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.06] border border-white/[0.08]">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary border border-border">
             <TrendingUp className="w-4 h-4 text-primary" />
             <span className="text-sm font-semibold text-foreground">{accuracyRate}%</span>
             <span className="text-xs text-foreground-muted">helpful</span>
@@ -90,7 +90,7 @@ export function ReviewsTable() {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/[0.08]">
+            <tr className="border-b border-border">
               <th className="text-left py-3 px-4 text-xs font-semibold text-foreground-muted uppercase">
                 User
               </th>
@@ -122,7 +122,7 @@ export function ReviewsTable() {
               const dateStr = new Date(review.created_at).toLocaleDateString()
               
               return (
-                <tr key={review.id} className="border-b border-white/[0.06] hover:bg-white/[0.03] transition-colors">
+                <tr key={review.id} className="border-b border-border hover:bg-muted transition-colors">
                   <td className="py-3 px-4 max-w-[200px]">
                     <div className="font-medium text-foreground truncate">{review.doctor?.full_name || 'Unknown'}</div>
                     <div className="text-xs text-foreground-muted truncate">{review.doctor?.email}</div>
@@ -156,7 +156,7 @@ export function ReviewsTable() {
       </div>
 
       {/* Average Score Card */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4 border-t border-white/[0.08]">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4 border-t border-border">
         <div>
           <p className="text-xs text-foreground-muted mb-1">Average Score</p>
           <div className="flex items-baseline gap-2">

@@ -29,7 +29,7 @@ export function ActivityChart({ data, title = "Activity" }: ActivityChartProps) 
                 <span className="text-foreground-muted">{item.day}</span>
                 <span className="text-foreground font-mono">{item.value}</span>
               </div>
-              <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
+              <div className="h-2 rounded-full bg-secondary overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
                   style={{ width: `${percentage}%` }}

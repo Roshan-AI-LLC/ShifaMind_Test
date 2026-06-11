@@ -34,8 +34,8 @@ const ConceptBadge = React.forwardRef<HTMLSpanElement, ConceptBadgeProps>(
           "inline-flex items-center gap-1.5 rounded-full font-medium transition-colors",
           sizeClasses[size],
           isHighScore
-            ? "bg-gradient-to-r from-primary/30 to-primary/20 text-white border border-primary/30"
-            : "bg-white/[0.06] text-foreground-muted border border-white/[0.08]",
+            ? "bg-gradient-to-r from-primary/30 to-primary/20 text-foreground border border-primary/30"
+            : "bg-secondary text-foreground-muted border border-border",
           className
         )}
       >

@@ -139,7 +139,7 @@ export default function WorkspacePage() {
               <p className="text-foreground-muted text-sm max-w-xs">{errorMsg}</p>
               <button
                 onClick={() => setErrorMsg(null)}
-                className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-sm text-foreground hover:bg-white/[0.1] transition-colors"
+                className="px-4 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground hover:bg-secondary transition-colors"
               >
                 Try Again
               </button>
@@ -150,7 +150,7 @@ export default function WorkspacePage() {
             <div className="text-center space-y-5 max-w-sm px-6">
               <div className="relative mx-auto w-fit">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-2xl rounded-full" />
-                <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
+                <div className="relative w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
                   <Zap className="w-8 h-8 text-primary" />
                 </div>
               </div>
@@ -181,7 +181,7 @@ export default function WorkspacePage() {
             <div className="w-full max-w-sm space-y-6 text-center px-6">
               <div className="relative mx-auto w-fit">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/10 blur-2xl rounded-full animate-pulse" />
-                <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
+                <div className="relative w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
                   <Zap className="w-8 h-8 text-primary" />
                 </div>
               </div>
@@ -197,7 +197,7 @@ export default function WorkspacePage() {
                 <p className="text-xs text-foreground-muted">Typically takes ~{EXPECTED_INFERENCE_SEC}s</p>
               </div>
               <div
-                className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]"
+                className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary"
                 role="progressbar"
                 aria-valuemin={0}
                 aria-valuemax={100}
@@ -215,7 +215,7 @@ export default function WorkspacePage() {
         ) : (
           <GlassCard key="result" className="space-y-6 animate-fade-in">
             {/* Results Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-white/[0.06]">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="px-2 py-1 rounded text-xs font-semibold bg-primary/20 text-primary">
@@ -260,7 +260,7 @@ export default function WorkspacePage() {
                     persistWorkspaceChatContext(result)
                     router.push("/dashboard/chat")
                   }}
-                  className="w-full px-4 py-3 rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground hover:bg-white/[0.1] transition-colors flex items-center justify-center gap-2 mt-4"
+                  className="w-full px-4 py-3 rounded-lg bg-secondary border border-border text-foreground hover:bg-secondary transition-colors flex items-center justify-center gap-2 mt-4"
                 >
                   <MessageSquare className="w-4 h-4" />
                   Discuss in Chat →

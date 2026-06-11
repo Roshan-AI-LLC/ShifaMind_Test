@@ -53,7 +53,7 @@ export function FeedbackWidget({ onClose, onSubmit }: FeedbackWidgetProps) {
             className={`p-1 rounded transition-colors ${
               star <= rating
                 ? "bg-gold/20 text-gold"
-                : "bg-white/[0.04] text-foreground-muted hover:bg-white/[0.08]"
+                : "bg-muted text-foreground-muted hover:bg-secondary"
             }`}
           >
             <Star className="w-5 h-5 fill-current" />
@@ -70,7 +70,7 @@ export function FeedbackWidget({ onClose, onSubmit }: FeedbackWidgetProps) {
           <h2 className="text-lg font-semibold text-foreground">Rate This Prediction</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-white/[0.08] transition-colors"
+            className="p-1 rounded hover:bg-secondary transition-colors"
           >
             <X className="w-5 h-5 text-foreground-muted" />
           </button>
@@ -100,7 +100,7 @@ export function FeedbackWidget({ onClose, onSubmit }: FeedbackWidgetProps) {
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Share your feedback..."
-            className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-foreground text-sm focus:outline-none focus:border-primary/50 resize-none placeholder:text-foreground-subtle"
+            className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:border-primary/50 resize-none placeholder:text-foreground-subtle"
             rows={3}
           />
         </div>
@@ -108,7 +108,7 @@ export function FeedbackWidget({ onClose, onSubmit }: FeedbackWidgetProps) {
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground hover:bg-white/[0.1] transition-colors font-medium"
+            className="flex-1 px-4 py-2 rounded-lg bg-secondary border border-border text-foreground hover:bg-secondary transition-colors font-medium"
           >
             Cancel
           </button>

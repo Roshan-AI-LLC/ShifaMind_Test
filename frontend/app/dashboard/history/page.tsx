@@ -74,7 +74,7 @@ export default function HistoryPage() {
           <h1 className="text-2xl font-semibold text-foreground">Prediction History</h1>
           <p className="text-foreground-muted mt-1">Review your past analyses and predictions</p>
         </div>
-        <span className="px-3 py-1 rounded-full text-sm font-medium bg-white/[0.06] text-foreground-muted w-fit">
+        <span className="px-3 py-1 rounded-full text-sm font-medium bg-secondary text-foreground-muted w-fit">
           {predictions.length} predictions
         </span>
       </div>
@@ -93,7 +93,7 @@ export default function HistoryPage() {
         </div>
       ) : predictions.length === 0 && !loadError ? (
         <GlassCard className="flex flex-col items-center justify-center py-16">
-          <div className="w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
             <History className="w-8 h-8 text-foreground-subtle" />
           </div>
           <h2 className="text-lg font-medium text-foreground mt-6">No predictions yet</h2>

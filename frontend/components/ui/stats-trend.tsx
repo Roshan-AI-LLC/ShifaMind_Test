@@ -37,7 +37,7 @@ export function StatsTrend({
 }: StatsTrendProps) {
   if (variant === "compact") {
     return (
-      <div className="text-center p-4 rounded-xl bg-white/[0.04]">
+      <div className="text-center p-4 rounded-xl bg-muted">
         {icon && <div className="flex justify-center mb-2">{icon}</div>}
         <p className="text-2xl font-semibold font-mono text-foreground">{value}</p>
         <p className="text-xs text-foreground-muted mt-1">{label}</p>

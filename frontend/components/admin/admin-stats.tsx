@@ -31,7 +31,7 @@ export function AdminStats() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-28 rounded-xl bg-white/[0.04]" />
+          <div key={i} className="h-28 rounded-xl bg-muted" />
         ))}
       </div>
     )

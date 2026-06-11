@@ -30,7 +30,7 @@ const ConfidenceBar = React.forwardRef<HTMLDivElement, ConfidenceBarProps>(
       <div ref={ref} className={cn("flex items-center gap-3", className)}>
         <div 
           className={cn(
-            "flex-1 rounded-full bg-white/[0.08] overflow-hidden",
+            "flex-1 rounded-full bg-secondary overflow-hidden",
             sizeClasses[size]
           )}
         >

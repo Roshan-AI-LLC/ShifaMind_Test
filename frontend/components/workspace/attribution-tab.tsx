@@ -19,19 +19,19 @@ export function AttributionTab({ attributions }: AttributionTabProps) {
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null)
 
   const getDiagnosisColor = (code: string, selected: boolean) => {
-    if (!selected) return "bg-white/[0.04] border-white/[0.08]"
+    if (!selected) return "bg-muted border-border"
     return "bg-primary/10 border-primary/30"
   }
 
   const getConceptColor = (concept: string, selected: boolean) => {
-    if (!selected) return "bg-white/[0.04] border-white/[0.08]"
+    if (!selected) return "bg-muted border-border"
     return "bg-primary/10 border-primary/30"
   }
 
   return (
     <div className="space-y-4">
       {/* Info banner */}
-      <div className="flex gap-3 p-3 rounded-lg bg-white/[0.04] border border-white/[0.08]">
+      <div className="flex gap-3 p-3 rounded-lg bg-muted border border-border">
         <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
         <p className="text-sm text-foreground-muted">
           Click on a diagnosis or concept to see how they relate

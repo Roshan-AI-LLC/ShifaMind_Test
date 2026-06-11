@@ -49,9 +49,19 @@ function publicEnvFromParent() {
   return env
 }
 
+/**
+ * Path-based hosting under platform.roshan-ai.com/shifamind.
+ * Opt-in: only takes effect when NEXT_PUBLIC_BASE_PATH is set (e.g. "/shifamind"),
+ * so the current platform.shifamind.me deploy keeps working until the cutover.
+ * At cutover, set NEXT_PUBLIC_BASE_PATH=/shifamind in Netlify and add the rewrite
+ * on platform.roshan-ai.com (see DOMAIN_MIGRATION.md).
+ */
+const basePath = (process.env.NEXT_PUBLIC_BASE_PATH || parentEnv.NEXT_PUBLIC_BASE_PATH || '').replace(/\/$/, '')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  env: publicEnvFromParent(),
+  ...(basePath ? { basePath, assetPrefix: basePath } : {}),
+  env: { ...publicEnvFromParent(), NEXT_PUBLIC_BASE_PATH: basePath },
   images: {
     unoptimized: true,
   },

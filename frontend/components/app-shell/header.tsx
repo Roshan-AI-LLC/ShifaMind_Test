@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Menu, LogOut, ChevronRight } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ThemeToggle } from "@/components/theme-toggle"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,7 +50,7 @@ export function Header({ user, onMenuClick, onSignOut }: HeaderProps) {
         {/* Mobile menu button */}
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-white/[0.06] transition-colors"
+          className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-secondary transition-colors"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5 text-foreground-muted" />
@@ -77,10 +78,12 @@ export function Header({ user, onMenuClick, onSignOut }: HeaderProps) {
         </nav>
       </div>
 
-      {/* Right: User avatar + menu */}
+      {/* Right: Theme toggle + User avatar + menu */}
+      <div className="flex items-center gap-2">
+      <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-3 p-1.5 -mr-1.5 rounded-lg hover:bg-white/[0.06] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          <button className="flex items-center gap-3 p-1.5 -mr-1.5 rounded-lg hover:bg-secondary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             <Avatar className="w-8 h-8 bg-primary/20 border border-primary/30">
               <AvatarFallback className="text-primary text-sm font-medium bg-transparent">
                 {user?.initials || "U"}
@@ -112,6 +115,7 @@ export function Header({ user, onMenuClick, onSignOut }: HeaderProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </header>
   )
 }

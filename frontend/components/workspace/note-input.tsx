@@ -103,7 +103,7 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
         >
           <SelectTrigger
             size="sm"
-            className="w-full max-w-none border-white/[0.08] bg-white/[0.04] text-foreground text-xs h-9"
+            className="w-full max-w-none border-border bg-muted text-foreground text-xs h-9"
           >
             <SelectValue
               placeholder={
@@ -117,7 +117,7 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
               }
             />
           </SelectTrigger>
-          <SelectContent className="max-h-72 border-white/[0.08] bg-[#0f1419] text-foreground">
+          <SelectContent className="max-h-72 border-border bg-popover text-foreground">
             {samplesByCategory.map(([category, rows]) => (
               <SelectGroup key={category}>
                 <SelectLabel className="text-foreground-subtle text-[10px] uppercase tracking-wide">
@@ -127,7 +127,7 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
                   <SelectItem
                     key={s.id}
                     value={s.id}
-                    className="text-xs focus:bg-white/[0.08] focus:text-foreground"
+                    className="text-xs focus:bg-secondary focus:text-foreground"
                   >
                     <span className="truncate">{s.title}</span>
                   </SelectItem>
@@ -161,14 +161,14 @@ export function NoteInput({ onAnalyze }: { onAnalyze: (note: string) => void }) 
         value={note}
         onChange={(e) => setNote(e.target.value)}
         placeholder="Paste clinical note here…"
-        className={`flex-1 min-h-64 p-3 rounded-lg bg-white/[0.04] border ${
+        className={`flex-1 min-h-64 p-3 rounded-lg bg-muted border ${
           exceedsLimit
             ? "border-destructive"
             : tooShortForReliable
             ? "border-gold/40"
             : idealRange
             ? "border-primary/40"
-            : "border-white/[0.08]"
+            : "border-border"
         } text-foreground text-sm font-mono focus:outline-none focus:border-primary/50 resize-none placeholder:text-foreground-subtle`}
       />
 

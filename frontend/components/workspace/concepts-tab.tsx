@@ -24,10 +24,10 @@ export function ConceptsTab({ concepts }: ConceptsTabProps) {
   return (
     <div className="space-y-4">
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-white/[0.06]">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-border">
         <div className="flex items-center gap-2">
           <span className="text-sm text-foreground-muted">View Mode:</span>
-          <div className="flex gap-1 bg-white/[0.06] p-1 rounded-lg">
+          <div className="flex gap-1 bg-secondary p-1 rounded-lg">
             <button
               onClick={() => setViewMode("pills")}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
@@ -53,7 +53,7 @@ export function ConceptsTab({ concepts }: ConceptsTabProps) {
 
         <button
           onClick={() => setShowInactive(!showInactive)}
-          className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-sm text-foreground hover:bg-white/[0.1] transition-colors"
+          className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary border border-border text-sm text-foreground hover:bg-secondary transition-colors"
         >
           {showInactive ? (
             <ToggleRight className="w-4 h-4" />
@@ -87,7 +87,7 @@ export function ConceptsTab({ concepts }: ConceptsTabProps) {
             filteredConcepts.map(concept => (
               <div
                 key={concept.name}
-                className={`p-3 rounded-lg bg-white/[0.04] border border-white/[0.06] ${
+                className={`p-3 rounded-lg bg-muted border border-border ${
                   !concept.active ? "opacity-50" : ""
                 }`}
               >

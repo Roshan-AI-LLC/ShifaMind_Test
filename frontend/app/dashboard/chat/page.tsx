@@ -116,7 +116,7 @@ export default function ChatPage() {
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between pb-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
               <MessageSquare className="w-5 h-5 text-primary" />
@@ -134,7 +134,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={() => setShowSidebar(!showSidebar)}
-              className="sm:hidden p-2 hover:bg-white/[0.08] rounded-lg transition-colors"
+              className="sm:hidden p-2 hover:bg-secondary rounded-lg transition-colors"
               aria-label={showSidebar ? "Close analysis context" : "Open analysis context"}
             >
               {showSidebar ? (
@@ -168,7 +168,7 @@ export default function ChatPage() {
                   key={question}
                   type="button"
                   onClick={() => handleSendMessage(question)}
-                  className="px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.08] text-sm text-foreground-muted hover:text-foreground hover:bg-white/[0.08] transition-colors"
+                  className="px-4 py-2 rounded-full bg-muted border border-border text-sm text-foreground-muted hover:text-foreground hover:bg-secondary transition-colors"
                 >
                   {question}
                 </button>
@@ -190,7 +190,7 @@ export default function ChatPage() {
                 <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
                   <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.08]">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-secondary border border-border">
                   <span className="text-xs text-foreground-muted">Thinking</span>
                   <span className="text-xs text-primary animate-bounce">•</span>
                   <span className="text-xs text-primary animate-bounce delay-100">•</span>
@@ -208,7 +208,7 @@ export default function ChatPage() {
       {hasContext && showSidebar && (
         <div className="sm:hidden fixed inset-0 z-50 flex justify-end bg-black/50" onClick={() => setShowSidebar(false)}>
           <div
-            className="h-full w-[min(100%,20rem)] border-l border-white/[0.08] bg-[#0a0e12] shadow-xl"
+            className="h-full w-[min(100%,20rem)] border-l border-border bg-popover shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <ContextSidebar

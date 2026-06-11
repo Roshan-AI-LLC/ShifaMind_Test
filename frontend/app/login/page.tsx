@@ -37,9 +37,10 @@ export default function LoginPage() {
     const supabase = createClient()
 
     if (mode === "magic-link") {
+      const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ""
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+        options: { emailRedirectTo: `${window.location.origin}${basePath}/dashboard` },
       })
       if (error) {
         setError(error.message)
@@ -63,30 +64,37 @@ export default function LoginPage() {
     <div className="relative min-h-screen flex items-center justify-center p-4">
       <AmbientBackground />
 
-      <div className="relative z-10 w-full max-w-md space-y-6 animate-fade-in">
-        {/* Logo */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-24 h-24">
+      <div className="relative z-10 w-full max-w-md space-y-6 enter-fade-up">
+        {/* Logo + wordmark */}
+        <div className="text-center flex flex-col items-center gap-3">
+          <div className="enter-fade-up inline-flex items-center gap-2 rounded-full border border-subtle bg-glass px-3 py-1 text-[0.7rem] font-medium uppercase tracking-[0.14em] text-muted-foreground backdrop-blur">
+            ShifaMind · A Roshan AI product
+          </div>
+          <div className="inline-flex items-center justify-center w-20 h-20 float-y">
             <img src="/icon_transparent.png" className="w-full h-full object-contain" alt="ShifaMind Logo" />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">ShifaMind</h1>
-            <p className="text-foreground-muted text-sm mt-1">Clinical AI Diagnosis Platform</p>
+            <h1 className="font-display text-3xl font-bold tracking-[-0.02em] text-foreground">
+              Welcome <span className="gradient-text">back</span>
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1.5">
+              Sign in to continue concept-grounded ICD-10 coding
+            </p>
           </div>
         </div>
 
         {/* Login Card */}
-        <GlassCard className="relative overflow-hidden" glow="teal">
+        <GlassCard className="relative overflow-hidden enter-fade-up enter-d-1" glow="teal">
           {/* Mode toggle */}
-          <div className="flex p-1 mb-6 bg-white/[0.04] rounded-xl">
+          <div className="flex p-1 mb-6 bg-muted rounded-xl">
             <button
               type="button"
               onClick={() => { setMode("password"); setMagicLinkSent(false); setError(null) }}
               className={cn(
                 "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200",
                 mode === "password"
-                  ? "bg-white/[0.08] text-foreground"
-                  : "text-foreground-muted hover:text-foreground"
+                  ? "glass-strong text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               Password
@@ -97,8 +105,8 @@ export default function LoginPage() {
               className={cn(
                 "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200",
                 mode === "magic-link"
-                  ? "bg-white/[0.08] text-foreground"
-                  : "text-foreground-muted hover:text-foreground"
+                  ? "glass-strong text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               Magic Link
@@ -146,7 +154,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-10 bg-white/[0.04] border-white/[0.08] text-foreground placeholder:text-foreground-subtle focus:border-primary focus:ring-primary/20"
+                    className="pl-10 bg-glass border-subtle text-foreground placeholder:text-foreground-subtle focus:border-primary focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -164,7 +172,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="pl-10 bg-white/[0.04] border-white/[0.08] text-foreground placeholder:text-foreground-subtle focus:border-primary focus:ring-primary/20"
+                      className="pl-10 bg-glass border-subtle text-foreground placeholder:text-foreground-subtle focus:border-primary focus:ring-primary/20"
                     />
                   </div>
                 </div>
@@ -174,7 +182,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-[0_0_20px_rgba(78,205,196,0.3)] hover:shadow-[0_0_30px_rgba(78,205,196,0.4)] transition-all duration-200"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium ring-glow transition-all duration-200 hover:-translate-y-0.5"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
@@ -216,7 +224,7 @@ export default function LoginPage() {
             </div>
             
             {isRequestingAccess && (
-              <div className="w-full pt-4 mt-2 border-t border-white/[0.08] animate-fade-in">
+              <div className="w-full pt-4 mt-2 border-t border-subtle animate-fade-in">
                 {reqSuccess ? (
                   <div className="text-center py-4 space-y-2">
                     <div className="mx-auto w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
@@ -249,15 +257,15 @@ export default function LoginPage() {
                     )}
                     <div className="space-y-2">
                       <Label htmlFor="req-name" className="text-xs text-foreground-muted">Full Name</Label>
-                      <Input id="req-name" name="name" required disabled={reqLoading} className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
+                      <Input id="req-name" name="name" required disabled={reqLoading} className="h-8 text-sm bg-glass border-subtle" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="req-email" className="text-xs text-foreground-muted">Work Email</Label>
-                      <Input id="req-email" name="email" type="email" required disabled={reqLoading} className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
+                      <Input id="req-email" name="email" type="email" required disabled={reqLoading} className="h-8 text-sm bg-glass border-subtle" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="req-org" className="text-xs text-foreground-muted">Organization</Label>
-                      <Input id="req-org" name="organization" required disabled={reqLoading} className="h-8 text-sm bg-white/[0.04] border-white/[0.08]" />
+                      <Input id="req-org" name="organization" required disabled={reqLoading} className="h-8 text-sm bg-glass border-subtle" />
                     </div>
                     <Button type="submit" size="sm" disabled={reqLoading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium transition-all">
                       {reqLoading ? (

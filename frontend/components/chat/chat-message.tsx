@@ -29,7 +29,7 @@ const mdComponents: Components = {
   h1: ({ className, ...props }) => (
     <h1
       className={cn(
-        "text-base font-semibold text-foreground mt-4 mb-2 first:mt-0 pb-1 border-b border-white/[0.08]",
+        "text-base font-semibold text-foreground mt-4 mb-2 first:mt-0 pb-1 border-b border-border",
         className
       )}
       {...props}
@@ -70,7 +70,7 @@ const mdComponents: Components = {
       {...props}
     />
   ),
-  hr: () => <hr className="my-4 border-white/[0.1]" />,
+  hr: () => <hr className="my-4 border-border" />,
   a: ({ className, href, children, ...props }) => (
     <a
       href={href}
@@ -97,7 +97,7 @@ const mdComponents: Components = {
     return (
       <code
         className={cn(
-          "px-1.5 py-0.5 rounded-md bg-white/[0.08] text-[0.8125rem] font-mono text-gold/90",
+          "px-1.5 py-0.5 rounded-md bg-secondary text-[0.8125rem] font-mono text-gold/90",
           className
         )}
         {...props}
@@ -109,7 +109,7 @@ const mdComponents: Components = {
   pre: ({ className, children, ...props }) => (
     <pre
       className={cn(
-        "my-2 p-3 rounded-lg bg-black/40 border border-white/[0.08] overflow-x-auto text-[0.8125rem] leading-relaxed",
+        "my-2 p-3 rounded-lg bg-black/40 border border-border overflow-x-auto text-[0.8125rem] leading-relaxed",
         className
       )}
       {...props}
@@ -133,7 +133,7 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
             "w-full px-4 py-3 rounded-xl",
             isUser
               ? "bg-primary text-primary-foreground rounded-br-none"
-              : "bg-white/[0.06] text-foreground rounded-bl-none border border-white/[0.08]"
+              : "bg-secondary text-foreground rounded-bl-none border border-border"
           )}
         >
           {isUser ? (

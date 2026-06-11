@@ -63,7 +63,7 @@ export function PredictionsList({ predictions }: PredictionsListProps) {
 
                 {/* Expanded concepts */}
                 {expandedRank === pred.rank && pred.concepts.length > 0 && (
-                  <div className="pt-4 border-t border-white/[0.06] space-y-2">
+                  <div className="pt-4 border-t border-border space-y-2">
                     <p className="text-xs text-foreground-muted uppercase tracking-wider">Contributing Concepts</p>
                     <div className="flex flex-wrap gap-2">
                       {pred.concepts.map((concept) => (
@@ -125,7 +125,7 @@ export function PredictionsList({ predictions }: PredictionsListProps) {
 
               {/* Expanded concepts */}
               {expandedRank === pred.rank && pred.concepts.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-2">
+                <div className="mt-4 pt-4 border-t border-border space-y-2">
                   <p className="text-xs text-foreground-muted uppercase tracking-wider">Contributing Concepts</p>
                   <div className="flex flex-wrap gap-2">
                     {pred.concepts.map((concept) => (

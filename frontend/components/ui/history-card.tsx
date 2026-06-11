@@ -70,11 +70,11 @@ export function HistoryCard({
       </button>
 
       {isExpanded && (
-        <div className="mt-6 pt-6 border-t border-white/[0.06] space-y-4 animate-fade-in">
+        <div className="mt-6 pt-6 border-t border-border space-y-4 animate-fade-in">
           {/* Original content */}
           <div>
             <h4 className="text-sm font-medium text-foreground-muted mb-2">Clinical Note</h4>
-            <div className="p-3 rounded-lg bg-white/[0.04] text-sm text-foreground leading-relaxed max-h-32 overflow-y-auto">
+            <div className="p-3 rounded-lg bg-muted text-sm text-foreground leading-relaxed max-h-32 overflow-y-auto">
               {content}
             </div>
           </div>
@@ -103,13 +103,13 @@ export function HistoryCard({
 
           {/* Feedback section */}
           {!userFeedback && (
-            <div className="pt-4 border-t border-white/[0.06]">
+            <div className="pt-4 border-t border-border">
               <p className="text-xs text-foreground-muted mb-3">Was this prediction helpful?</p>
               <div className="flex gap-2">
                 <button className="px-3 py-1.5 text-xs rounded-lg bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 transition-colors">
                   Helpful
                 </button>
-                <button className="px-3 py-1.5 text-xs rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground hover:bg-white/[0.1] transition-colors">
+                <button className="px-3 py-1.5 text-xs rounded-lg bg-secondary border border-border text-foreground hover:bg-secondary transition-colors">
                   Incorrect
                 </button>
               </div>

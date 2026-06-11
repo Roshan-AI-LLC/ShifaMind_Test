@@ -107,7 +107,7 @@ export default function ProfilePage() {
             <h3 className="font-medium text-foreground">Security</h3>
           </div>
           <p className="text-sm text-foreground-muted">Manage your authentication settings.</p>
-          <button className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-sm text-foreground hover:bg-white/[0.1] transition-colors">
+          <button className="px-4 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground hover:bg-secondary transition-colors">
             Update Password
           </button>
         </GlassCard>
@@ -118,7 +118,7 @@ export default function ProfilePage() {
             <h3 className="font-medium text-foreground">Notifications</h3>
           </div>
           <p className="text-sm text-foreground-muted">Control how ShifaMind contacts you.</p>
-          <button className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-sm text-foreground hover:bg-white/[0.1] transition-colors">
+          <button className="px-4 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground hover:bg-secondary transition-colors">
             Preferences
           </button>
         </GlassCard>
