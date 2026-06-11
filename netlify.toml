@@ -8,3 +8,14 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Path-based hosting: the app is served under basePath /shifamind
+# (NEXT_PUBLIC_BASE_PATH=/shifamind). Send the bare domain to the app root so
+# platform.roshan-ai.com lands on platform.roshan-ai.com/shifamind instead of 404.
+# (No-op when NEXT_PUBLIC_BASE_PATH is empty, since /shifamind won't exist —
+# only enable this redirect once you set the base path in Netlify env.)
+[[redirects]]
+  from = "/"
+  to = "/shifamind"
+  status = 301
+  force = false
