@@ -9,6 +9,25 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# basePath /shifamind moves public/ assets under /shifamind/, but raw <img src>
+# and CSS @font-face still reference them at the root. Rewrite root asset
+# requests to their real basePath location so they resolve in production.
+# (Harmless when basePath is empty/local dev — these paths aren't requested there.)
+[[redirects]]
+  from = "/fonts/*"
+  to = "/shifamind/fonts/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/icon_transparent.png"
+  to = "/shifamind/icon_transparent.png"
+  status = 200
+
+[[redirects]]
+  from = "/icon.svg"
+  to = "/shifamind/icon.svg"
+  status = 200
+
 # Path-based hosting: the app is served under basePath /shifamind
 # (NEXT_PUBLIC_BASE_PATH=/shifamind). Send the bare domain to the app root so
 # platform.roshan-ai.com lands on platform.roshan-ai.com/shifamind instead of 404.
