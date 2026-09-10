@@ -1,22 +1,28 @@
-# Queued — not done in the design-overhaul session (2026-06-11)
+# Queued
 
-We deliberately scoped today's session to the **design overhaul** (highest-visible-
-impact, lowest-risk) and prep work. The items below are pinned for follow-up
-sessions so nothing gets rushed. Roughly in priority order.
+Backlog, oldest first. Section 1 was raised in the design-overhaul session of
+2026-06-11 and closed during the full-code deploy on 2026-09-09/10; sections
+2-5 are still open.
 
-## 1. Backend / DB fixes (see DIAGNOSIS.md for root causes)
-- [ ] **Model loading** — `MODEL_SOURCE=s3` but AWS creds are blank, so `/predict`
-      returns 503 off-EC2. Attach an EC2 IAM role, OR bake weights into the image
-      with `MODEL_SOURCE=local`, OR populate backend AWS creds. _This is the most
-      likely cause of "bad results."_
-- [ ] **Silent persistence** — `predict.py` swallows Supabase insert failures with a
-      `logger.warning`. Surface the error and add an integration test asserting a row
-      lands in `predictions`. _This is the most likely cause of "DB not linking."_
-- [ ] **Verify** `get_current_doctor` returns the auth UID that RLS `predictions_own`
-      (`auth.uid() = doctor_id`) checks against.
-- [ ] **LLM** — move off OpenRouter `:free` (rate-limited) to a paid model, and/or
-      wire Bedrock creds so the fallback actually works. Fix the bogus
-      `OPENROUTER_MODEL` default in `config.py`.
+## 1. Backend / DB fixes — DONE (2026-09-09/10)
+
+All four closed during the full-code deploy. Root-cause notes live in
+FULLCODE_DEPLOY.md now; DIAGNOSIS.md was deleted as it described only these.
+
+- [x] **Model loading** — the box now pulls artifacts from S3 with an EC2
+      instance role (`shifamind-ec2-s3`), no keys on disk. Cached on a mounted
+      volume so replacing the container does not re-download 758MB
+- [x] **Silent persistence** — `_persist()` logs `persist <id>: HTTP <code>` on
+      every call, not only on failure, so silence in the log means the code did
+      not run. The actual cause of the empty history turned out to be different
+      and worse: the frontend was pointed at the OLD API host the whole time.
+      See FULLCODE_DEPLOY.md Phase 3.4
+- [x] **`get_current_doctor` / RLS uid** — verified by `scripts/diag_history.py`,
+      which signs in as the doctor and makes the byte-identical insert. RLS and
+      the column types were never the problem
+- [x] **LLM** — the box carries a working paid OpenRouter key. Note the LOCAL
+      `.env` still has a 9-character stub that 401s, so chat works in production
+      and not on a laptop. Worth copying the box's value down
 
 ## 2. Performance pass (frontend)
 - [ ] Run `next build` on a machine with network and check bundle sizes / route

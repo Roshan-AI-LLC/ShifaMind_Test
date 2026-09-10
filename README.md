@@ -1,119 +1,90 @@
 # ShifaMind Platform
 
-Authenticated clinical decision support platform for doctors — ICD-10 predictions, concept explanations, and LLM-powered chat grounded in Phase 1 BioClinicalBERT output.
+Authenticated clinical coding platform. A doctor pastes a discharge note and
+gets ICD-10 codes back — each one accompanied by the clinical concepts that
+produced it, every concept carrying a signed contribution and the character
+spans in the note that fired it.
 
-**Live:** `platform.shifamind.me` (Netlify) | API: `api.shifamind.me` (AWS EC2/ECS)
+**Live:** `platform.roshan-ai.com/shifamind` (Netlify) · API `api.roshan-ai.com`
+(Cloudflare → EC2 nginx → container :8000) · Auth/DB Supabase
 
----
+## The model
 
-## Stack
+Full-code ShifaMind, tag `w768_honest`, seed 10.
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Next.js 14 (App Router) + Tailwind CSS + shadcn/ui |
-| Hosting | Netlify + `@netlify/plugin-nextjs` |
-| Auth & DB | Supabase (Auth + Postgres) |
-| Backend | FastAPI (Python 3.11) |
-| ML Inference | PyTorch + BioClinicalBERT Phase 1 (~300ms CPU) |
-| LLM | OpenRouter (default) → AWS Bedrock (swap via env var) |
-| Model Storage | AWS S3 |
+| | |
+|---|---|
+| Codes | 7,940 ICD-10 (5,802 CM + 2,138 PCS) |
+| Concepts | 16,227, of which 384 are routed per note |
+| Encoder | BioClinical-ModernBERT-base, 6,144 tokens |
+| Composition | `strict` — no residual bypass |
+| Threshold | 0.3, selected on validation, never tuned on test |
 
+`compose="strict"` is the load-bearing choice. There is no residual path, so
+`logit = bias + Σ concept contributions` exactly, and the model asserts that
+reconciliation on every call rather than trusting it. A prediction whose
+explanation does not add up is refused, because a clinician cannot detect that
+from the output and an unverifiable explanation is worse than none.
 
----
+The serving code in `backend/app/models/` is vendored byte-for-byte from the
+training repo, with provenance in each file's header. Reimplementing it would
+let serving and training drift, and the failure mode is plausible codes with
+meaningless attribution.
 
-## Quick Start
+## Layout
 
-### Prerequisites
-- Node.js 20+
-- Python 3.11+
-- A Supabase project (free tier)
+```
+backend/app/
+  models/      mcb.py, explain.py (vendored), fullcode*.py, router.py
+  concepts/    Aho-Corasick matcher, ConText assertions, numeric rules
+  routers/     predict, health, notes, chat, reviews, admin
+frontend/      Next.js 16, Supabase auth
+infra/         Dockerfile.backend, deploy_remote_build.sh, sync_env_keys.sh
+scripts/       parity, smoke, seeding, diagnostics
+supabase/      migrations
+```
 
-### 1. Clone & configure
+## Running locally
 
 ```bash
-git clone https://github.com/roshan-ai-llc/shifamind_test
-cd shifamind_test
-cp .env.example .env
-# Fill in your Supabase URL, keys, etc.
+python -m venv .venv-serve && .venv-serve/bin/pip install -r backend/requirements.txt
+.venv-serve/bin/uvicorn backend.app.main:app --reload    # from the repo root
+
+cd frontend && npm run dev:local
 ```
 
-### 2. Apply database schema
+`dev:local`, not `dev`. `.env` holds the PRODUCTION `NEXT_PUBLIC_API_URL`, so
+plain `next dev` points the browser at the deployed box and every local backend
+change is silently ignored. This cost hours once; see FULLCODE_DEPLOY.md
+Phase 3.4.
 
-In your Supabase SQL editor, run:
-```
-supabase/migrations/001_initial_schema.sql
-```
-
-### 3. Seed doctor accounts
+## Deploying
 
 ```bash
-pip install supabase python-dotenv
-python scripts/seed_doctors.py
+export EC2_HOST=52.20.157.176 EC2_USER=ubuntu SSH_KEY="…/shifamind-key.pem"
+./infra/deploy_remote_build.sh
 ```
 
-Default password: `ShifaMind2025!` (override with `SEED_PASSWORD` env var)
+Builds on the box. The dev Mac is arm64 and EC2 is x86_64, and cross-building
+torch under QEMU is far slower than a native build on the instance's own cores.
+The script tags the running image `previous` before replacing it.
 
-### 4. Run the frontend
+Artifacts come from `s3://shifamind-models/models/fullcode/s10/` via the
+instance role, cached under `/var/lib/shifamind/fullcode` on a mounted volume.
+No AWS keys live on the box.
+
+Full runbook: **FULLCODE_DEPLOY.md**. Domain and cutover: **GO_LIVE.md**.
+
+## Checks
 
 ```bash
-cd frontend
-cp ../.env.example .env.local   # fill NEXT_PUBLIC_* vars
-npm install
-npm run dev
-# → http://localhost:3000
+python scripts/parity_router.py                  # router matches training, byte for byte
+python scripts/smoke_fullcode.py                 # checkpoint loads, attribution reconciles
+python scripts/smoke_api.py --url … --email …    # the deployed service, end to end
+python scripts/diag_history.py <email> <pass>    # why a prediction did not persist
 ```
 
-### 5. Run the backend
-
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-# → http://localhost:8000/api/health
-# → http://localhost:8000/api/docs
-```
-
----
-
-## Project Structure
-
-```
-shifamind-platform/
-├── frontend/          # Next.js 14 App Router
-│   ├── app/           # Pages (login, dashboard, admin)
-│   ├── components/    # UI components (glass design system)
-│   ├── lib/           # Supabase clients, utils
-│   └── hooks/         # useAuth, usePrediction, useChat
-├── backend/           # FastAPI
-│   └── app/           # main, config, routers, schemas
-├── model/             # Phase 1 inference code (added Part 2)
-├── supabase/
-│   └── migrations/    # SQL schema
-├── scripts/           # seed_doctors.py, seed_notes.py
-└── infra/             # Dockerfile, deploy scripts
-```
-
----
-
-## Environment Variables
-
-See `.env.example` for all required variables.
-
-Key ones for Part 1:
-- `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` — frontend auth
-- `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` — backend + seed scripts
-- `NEXT_PUBLIC_API_URL` — points frontend to backend
-
----
-
-## Design System
-
-Glassmorphism — matches `shifamind.me` aesthetic.
-
-```
---bg-deep: #060a13       Dark navy background
---accent:  #4ecdc4       Teal accent (predictions, CTAs)
---glass:   rgba(255,255,255,0.04) + backdrop-blur-xl
-```
-
-All content uses `GlassCard` on a dark background. No ambient orbs in the app shell (unlike the marketing page).
+`smoke_api.py` checks more than HTTP 200: no empty code lists, no code outside
+the vocabulary, every code carrying at least one concept with a real span, and
+`concept_share == 1.0`. The span check is the important one — a code we cannot
+point at a quoted span for defeats the purpose of the system.

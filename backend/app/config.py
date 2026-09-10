@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     # LLM
     LLM_PROVIDER: str = "openrouter"
     OPENROUTER_API_KEY: str = ""
-    OPENROUTER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
+    #: Overridden by .env in every real deployment; this is the fallback.
+    OPENROUTER_MODEL: str = "nvidia/nemotron-3-super-120b-a12b:free"
 
     # AWS
     AWS_ACCESS_KEY_ID: str = ""
