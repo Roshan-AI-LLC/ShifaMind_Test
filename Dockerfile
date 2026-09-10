@@ -1,29 +1,10 @@
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# System deps
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install CPU-only PyTorch first (much smaller image, avoids CUDA download)
-RUN pip install --no-cache-dir \
-    torch>=2.1.0 \
-    --index-url https://download.pytorch.org/whl/cpu
-
-# Install remaining Python deps
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy backend and model source
-COPY backend/ ./backend/
-COPY model/ ./model/
-
-WORKDIR /app/backend
-
-ENV PYTHONPATH=/app
-
-EXPOSE 8000
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# RETIRED. The production build is infra/Dockerfile.backend, which
+# infra/deploy.sh builds.
+#
+# This file still did `COPY model/ ./model/` — a directory removed when the
+# full-code model replaced the 50-code one — and it never baked the backbone,
+# so any image built from it would call HuggingFace at boot. Left failing on
+# purpose rather than deleted, so a stray `docker build .` says why instead of
+# quietly producing the wrong image.
+FROM alpine:3.20
+RUN echo "Use: docker build -f infra/Dockerfile.backend -t shifamind-api ." && exit 1

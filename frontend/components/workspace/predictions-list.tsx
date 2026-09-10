@@ -12,7 +12,15 @@ interface Prediction {
   description: string
   confidence: number
   isActive: boolean
-  concepts: Array<{ name: string; score: number }>
+  concepts: Array<{
+    name: string
+    score: number
+    /** Signed contribution to THIS code's logit. Negative argues against it. */
+    contribution?: number
+    /** The literal phrase in the note that fired this concept. */
+    span?: string | null
+    assertion?: string | null
+  }>
 }
 
 interface PredictionsListProps {
@@ -71,6 +79,7 @@ export function PredictionsList({ predictions }: PredictionsListProps) {
                           key={concept.name}
                           name={concept.name}
                           score={concept.score}
+                          contribution={concept.contribution}
                         />
                       ))}
                     </div>
@@ -133,6 +142,7 @@ export function PredictionsList({ predictions }: PredictionsListProps) {
                         key={concept.name}
                         name={concept.name}
                         score={concept.score}
+                        contribution={concept.contribution}
                       />
                     ))}
                   </div>

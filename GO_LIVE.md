@@ -18,14 +18,14 @@ Your topology (confirmed from the repo, DEPLOY.md §9g):
 
 ### 1.1 SSH in and see what's actually running
 ```bash
-ssh -i ~/.ssh/shifamind.pem ubuntu@34.199.65.62
+ssh -i "/Users/mohammedsameersyed/Documents/Roshan AI/ShifaMind/ShifaMindv2/Repos/ShifaMind_Prod/shifamind-key.pem" ubuntu@52.20.157.176
 
 docker ps                                  # expect: shifamind-api ... Up
 curl -s localhost:8000/api/health ; echo   # expect: {"status":"ok","model_loaded":...}
 sudo ss -tlnp | grep -E ':80 |:443 |:8000'  # what's listening on 80/443/8000?
 ```
 - If `docker ps` is empty → the container isn't running. Redeploy: from your **local**
-  machine, `export EC2_HOST=34.199.65.62 EC2_USER=ubuntu SSH_KEY=~/.ssh/shifamind.pem`
+  machine, `export EC2_HOST=52.20.157.176 EC2_USER=ubuntu SSH_KEY="/Users/mohammedsameersyed/Documents/Roshan AI/ShifaMind/ShifaMindv2/Repos/ShifaMind_Prod/shifamind-key.pem"`
   then `./infra/deploy.sh ec2`.
 - Note whether **nginx** is on :80 (it should be, per your setup).
 
@@ -66,7 +66,7 @@ AWS Console → EC2 → Security Groups → your instance's group → Inbound ru
 - (keep 22 for SSH; you can later restrict 80 to Cloudflare IP ranges)
 
 ### 1.4 Cloudflare DNS + SSL (zone: roshan-ai.com)
-1. **DNS → Add record:** `A`, name `api`, IPv4 `34.199.65.62`, **Proxied** (orange cloud).
+1. **DNS → Add record:** `A`, name `api`, IPv4 `52.20.157.176`, **Proxied** (orange cloud).
 2. **SSL/TLS → Overview → Flexible**
    (browser↔Cloudflare = HTTPS; Cloudflare↔nginx = HTTP on :80. Simplest, works now.
    Harden to **Full** later by installing a Cloudflare Origin Cert on nginx + listen 443.)

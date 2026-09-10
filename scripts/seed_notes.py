@@ -24,6 +24,16 @@ from dotenv import load_dotenv
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 
+# Surgical, oncologic, orthopedic, obstetric, trauma and neuro-interventional
+# templates. The originals below were written for the top-50 DIAGNOSIS space and
+# contain no operative admissions, so they never exercise the 2,138 ICD-10-PCS
+# procedure codes that are 27% of the full-code label space.
+try:
+    from sample_notes_extra import EXTRA_NOTES
+except ImportError:  # running from a directory where scripts/ is not on the path
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from sample_notes_extra import EXTRA_NOTES
+
 SAMPLE_NOTES = [
     {
         "title": "Acute Decompensated Heart Failure — HFpEF",
@@ -2771,6 +2781,9 @@ FOLLOW-UP
     },
     # NOTES_PLACEHOLDER
 ]
+
+
+SAMPLE_NOTES.extend(EXTRA_NOTES)
 
 
 def main():

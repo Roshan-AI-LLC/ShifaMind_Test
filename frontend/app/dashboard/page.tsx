@@ -8,6 +8,7 @@ import { StatsTrend } from "@/components/ui/stats-trend"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 import { createClient } from "@/lib/supabase"
+import { getModelHealth, type ModelHealth } from "@/lib/api"
 
 const quickActions = [
   {
@@ -39,6 +40,11 @@ const quickActions = [
 export default function DashboardPage() {
   const { user } = useAuth()
   const [stats, setStats] = useState({ predictions: 0, chatSessions: 0 })
+  const [model, setModel] = useState<ModelHealth | null>(null)
+
+  useEffect(() => {
+    getModelHealth().then(setModel)
+  }, [])
 
   const displayName =
     user?.user_metadata?.full_name ||
@@ -117,14 +123,16 @@ export default function DashboardPage() {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-foreground font-medium">ShifaMindMCB v2.1</h3>
+              <h3 className="text-foreground font-medium">ShifaMind</h3>
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
             </div>
             <p className="text-foreground-muted text-sm">
-              ShifaMind • 160 concepts • 50 ICD-10 codes
+              {model
+                ? `${model.codes.toLocaleString()} ICD-10 codes • ${model.concepts.toLocaleString()} clinical concepts`
+                : "Loading model…"}
             </p>
           </div>
           <span className="hidden sm:inline-flex px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">

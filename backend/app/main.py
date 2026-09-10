@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .routers import health, predict, notes, chat, reviews, admin
-from .models.loader import load_model
+from .models.fullcode import load_fullcode
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
 logger = logging.getLogger(__name__)
@@ -17,7 +17,11 @@ async def lifespan(app: FastAPI):
     """Startup: load model. Shutdown: clean up."""
     settings = get_settings()
     logger.info("ShifaMind API starting up...")
-    await load_model(settings)
+    # Blocking and CPU-bound: ~5s warm, minutes on a cold artifact cache. Run it
+    # off the event loop so /api/health can answer while the model loads.
+    import anyio
+
+    await anyio.to_thread.run_sync(load_fullcode, settings)
     logger.info("Startup complete.")
     yield
     logger.info("ShifaMind API shutting down.")
@@ -28,7 +32,7 @@ def create_app() -> FastAPI:
 
     app = FastAPI(
         title="ShifaMind API",
-        description="Clinical decision support — Phase 1 inference + LLM chat",
+        description="Concept-grounded ICD-10 coding across the full 7,940-code space",
         version="1.0.0",
         lifespan=lifespan,
         docs_url="/api/docs",

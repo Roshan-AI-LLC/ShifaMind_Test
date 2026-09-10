@@ -15,23 +15,30 @@ export type ChatAnalysisContext = {
 }
 
 export function buildChatContextFromPrediction(data: PredictResponse): Omit<ChatAnalysisContext, "v" | "savedAt"> {
-  const above = data.predictions.filter((p) => p.above_threshold)
-  const ranked = [...data.predictions].sort((a, b) => b.confidence - a.confidence)
-  const top = above[0] ?? ranked[0] ?? null
-  const topConcepts = [...data.activated_concepts]
-    .filter((c) => c.active)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
-    .map((c) => ({ concept: c.concept, score: c.score }))
+  const above = data.codes.filter((c) => c.above_threshold)
+  const top = above[0] ?? data.codes[0] ?? null
+
+  // The concepts that carried the TOP code, ranked by how much they carried it.
+  // A global concept list would not tell the chat model which evidence produced
+  // the prediction it is being asked about.
+  const topConcepts = top
+    ? [...top.concepts]
+        .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
+        .slice(0, 5)
+        .map((cc) => ({ concept: cc.name, score: cc.contribution }))
+    : []
+
+  const distinct = new Set<string>()
+  for (const c of data.codes) for (const cc of c.concepts) distinct.add(cc.concept)
 
   return {
     predictionId: data.prediction_id ?? null,
     topDiagnosis: top
-      ? { code: top.code, description: top.description, confidence: top.confidence }
+      ? { code: top.code, description: top.title || top.code, confidence: top.probability }
       : null,
     topConcepts,
-    inferenceTimeMs: data.metadata.inference_time_ms,
-    totalConcepts: data.activated_concepts.length,
+    inferenceTimeMs: data.latency_ms,
+    totalConcepts: distinct.size,
     activeDiagnoses: above.length,
   }
 }

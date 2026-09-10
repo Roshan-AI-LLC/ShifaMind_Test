@@ -1,29 +1,64 @@
-# Multi-stage production build for ShifaMind FastAPI backend
+# Production build for the ShifaMind FastAPI backend.
 FROM python:3.11-slim AS base
 
 WORKDIR /app
 
-# System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential curl git \
     && rm -rf /var/lib/apt/lists/*
 
-# Python deps — install CPU-only torch first to avoid ~2GB of CUDA libraries
+# CPU-only torch first, so pip does not pull ~2GB of CUDA wheels.
 COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
-# App code
+# ---------------------------------------------------------------------------
+# Bake the backbone into the image.
+#
+# This server is only ever cold: it is started for a demo and stopped after.
+# Without this, the first load calls out to HuggingFace, so a demo depends on
+# HF being reachable and fast at that exact moment. Downloading at BUILD time
+# turns a runtime dependency into a build-time one, and TRANSFORMERS_OFFLINE=1
+# makes a silent re-fetch impossible rather than merely unlikely.
+#
+# Costs ~600MB of image. Worth it: the alternative is finding out HF is
+# rate-limiting you three minutes before a call with an investor.
+# ---------------------------------------------------------------------------
+ENV HF_HOME=/opt/hf
+RUN python -c "\
+from transformers import AutoModel, AutoTokenizer; \
+m='thomas-sounack/BioClinical-ModernBERT-base'; \
+AutoTokenizer.from_pretrained(m); AutoModel.from_pretrained(m); \
+print('backbone cached into the image')"
+ENV TRANSFORMERS_OFFLINE=1 HF_HUB_OFFLINE=1
+
 COPY backend/ ./backend/
-COPY model/ ./model/
 
-# Non-root user
-RUN useradd -m -u 1001 shifamind
+# Normalise permissions. Source files can arrive mode 600 (that is how they sit
+# in the dev repo, and both rsync -a and COPY preserve it), which leaves them
+# root-owned and unreadable by the unprivileged user this image runs as. The
+# failure is a PermissionError on an arbitrary module at import time, which
+# reads like a corrupt build rather than a permissions problem. a+rX: readable
+# for files, traversable for directories, no execute bit added to plain files.
+RUN chmod -R a+rX /app/backend
+
+# Artifact cache lives on a mounted volume so the 758MB checkpoint survives
+# `docker rm` and an instance stop/start. Owned by the app user because the
+# process writes here on a cache miss.
+RUN useradd -m -u 1001 shifamind \
+    && mkdir -p /var/lib/shifamind/fullcode /opt/hf \
+    && chown -R shifamind:shifamind /var/lib/shifamind /opt/hf
+VOLUME ["/var/lib/shifamind/fullcode"]
+
 USER shifamind
-
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+# start-period is generous because a cold cache pulls the checkpoint from S3
+# before the app can answer anything.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=300s --retries=3 \
     CMD curl -f http://localhost:8000/api/health || exit 1
 
+# One worker, deliberately. Each uvicorn worker would load its own copy of the
+# model, and two copies do not fit in 8 GiB. Concurrency is handled inside the
+# process by the inference semaphore, not by forking.
 CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

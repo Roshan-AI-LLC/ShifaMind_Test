@@ -15,14 +15,14 @@ The backend API moves to `api.roshan-ai.com`, fronted by Cloudflare (see §0).
 
 ## 0. API host → api.roshan-ai.com (via Cloudflare) — fixes the SSL error
 
-**Why:** `api.shifamind.me` resolves to the Elastic IP (34.199.65.62) and the
+**Why:** `api.shifamind.me` resolves to the Elastic IP (52.20.157.176) and the
 server answers on 443, but the TLS cert doesn't cover that hostname
 (`curl` → "no alternative certificate subject name matches"), so browsers reject
 it ("Failed to fetch"). Putting the API behind Cloudflare lets Cloudflare's edge
 present a valid cert automatically — no certbot/renewals on EC2.
 
 **Steps (in Cloudflare, zone `roshan-ai.com`):**
-1. DNS → add `A` record: name `api`, IPv4 `34.199.65.62`, **Proxied** (orange cloud).
+1. DNS → add `A` record: name `api`, IPv4 `52.20.157.176`, **Proxied** (orange cloud).
 2. SSL/TLS → Overview → set encryption mode:
    - **Flexible** if the EC2 origin serves plain HTTP (e.g. uvicorn/nginx on :80) —
      fastest to get unblocked. Cloudflare↔browser is HTTPS; Cloudflare↔origin is HTTP.

@@ -54,3 +54,26 @@ coverage/
 scripts/sample_notes_seed.json
 scripts/_reseed_from_mimic.py
 .claude/worktrees/
+
+# Timestamped .env backups. `*.env` does not match these: it matches names
+# ENDING in .env, and these end in .bak.<timestamp>.
+.env.bak.*
+.env.*.bak
+
+# ── Credentials that arrive as files ─────────────────────────
+# The AWS console hands you access keys as a .csv download, and it lands in
+# whatever directory you were in. Never source control.
+*accessKeys*.csv
+*credentials*.csv
+*.pem
+*.key
+
+# ── Staged model artifacts ───────────────────────────────────
+# artifacts/fullcode is assembled by scripts/stage_fullcode_artifacts.py and
+# uploaded to S3. Derived content, some of it symlinks to a 758MB checkpoint
+# outside this repo. S3 is the source of truth; the script rebuilds the rest.
+artifacts/
+
+# ── Scratch output ───────────────────────────────────────────
+gate_probe.json
+*.tsbuildinfo

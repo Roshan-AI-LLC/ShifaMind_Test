@@ -2,30 +2,87 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export interface PredictedCode {
-  rank: number
-  code: string
-  description: string
-  confidence: number
-  threshold: number
-  above_threshold: boolean
+/** One matched mention of a concept in the note, with its character span. */
+export interface ConceptSpan {
+  start: number
+  end: number
+  surface: string
+  /** affirmed | negated | hypothetical | family | historical */
+  assertion: string
 }
 
-export interface ActivatedConcept {
+/** A concept's contribution to ONE code's logit. */
+export interface CodeConcept {
   concept: string
-  score: number
-  active: boolean
+  name: string
+  /**
+   * SIGNED contribution to this code's logit. Unbounded, typically -1 to +11.
+   * Not a probability and not a percentage: it is the exact per-concept term
+   * in `logit = bias + sum(contributions)`. Negative means this concept argues
+   * AGAINST the code.
+   */
+  contribution: number
+  /** Gate value in (0,1): how strongly the concept is asserted in this note. */
+  gate: number
+  spans: ConceptSpan[]
+}
+
+export interface PredictedCode {
+  code: string
+  title: string
+  /** "diag" (ICD-10-CM) or "proc" (ICD-10-PCS) */
+  kind: string
+  probability: number
+  above_threshold: boolean
+  concepts: CodeConcept[]
+  bias?: number
+  recon_error?: number
+}
+
+/** A concept the note MENTIONS that the model then shut off: the gate closed,
+ *  so it contributed nothing to any code. Usually a negated, hypothetical,
+ *  family-history or historical mention. */
+export interface SuppressedConcept {
+  concept: string
+  name: string
+  gate: number
+  spans: ConceptSpan[]
+  assertion: string | null
 }
 
 export interface PredictResponse {
-  predictions: PredictedCode[]
-  activated_concepts: ActivatedConcept[]
-  metadata: {
-    inference_time_ms: number
-    model_version: string
-    threshold_source: string
+  codes: PredictedCode[]
+  threshold: number
+  /** True when nothing cleared the threshold and the top 10 are shown instead. */
+  no_code_met_threshold: boolean
+  routing: {
+    concepts_matched: number
+    concepts_routed: number
+    concepts_suppressed: number
+    truncated: boolean
+    top_k: number
   }
+  suppressed: SuppressedConcept[]
+  tokens: number
+  truncated_note: boolean
+  /** 1.0 under strict composition, i.e. every logit came through concepts. */
+  concept_share: number | null
+  model: { tag: string; seed: number; compose: string }
+  latency_ms: number
   prediction_id?: string
+}
+
+export interface ModelHealth {
+  variant: string
+  tag: string
+  seed: number
+  loaded: boolean
+  codes: number
+  concepts: number
+  threshold: number
+  device: string
+  compose: string
+  max_concurrency: number
 }
 
 export type SseEvent =
@@ -53,6 +110,18 @@ function authHeaders(token: string): HeadersInit {
 
 // ── Endpoints ────────────────────────────────────────────────────────────────
 
+/** What is actually serving. Unauthenticated, so the dashboard can show it
+ *  before any prediction has been made. */
+export async function getModelHealth(): Promise<ModelHealth | null> {
+  try {
+    const res = await fetch(`${API_URL}/api/health/model`)
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
 export async function listSampleNotes(token: string): Promise<SampleNote[]> {
   const res = await fetch(`${API_URL}/api/notes`, {
     headers: authHeaders(token),
@@ -64,11 +133,19 @@ export async function listSampleNotes(token: string): Promise<SampleNote[]> {
   return res.json()
 }
 
-export async function predict(text: string, token: string): Promise<PredictResponse> {
+export async function predict(
+  text: string,
+  token: string,
+  opts: { threshold?: number; topConcepts?: number } = {}
+): Promise<PredictResponse> {
   const res = await fetch(`${API_URL}/api/predict`, {
     method: 'POST',
     headers: authHeaders(token),
-    body: JSON.stringify({ text, apply_tuned_thresholds: true }),
+    body: JSON.stringify({
+      text,
+      threshold: opts.threshold ?? null,
+      top_concepts: opts.topConcepts ?? 8,
+    }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))

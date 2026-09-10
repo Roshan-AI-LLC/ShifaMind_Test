@@ -24,17 +24,20 @@ class Settings(BaseSettings):
     BEDROCK_PRIMARY_MODEL: str = "meta.llama3-3-70b-instruct-v1:0"
     BEDROCK_FALLBACK_MODEL: str = "anthropic.claude-sonnet-4-20250514-v1:0"
 
-    # Model / S3
+    # Model artifacts
     MODEL_SOURCE: str = "s3"  # "s3" or "local"
     S3_BUCKET: str = "shifamind-models"
-    S3_MODEL_KEY: str = "phase1/phase1_best.pt"
-    S3_THRESHOLDS_KEY: str = "phase1/optimal_thresholds.json"
-    S3_CONCEPT_LIST_KEY: str = "phase1/concept_list.json"
-    S3_ICD10_INFO_KEY: str = "phase1/top50_icd10_info.json"
-    LOCAL_MODEL_PATH: str = "model/phase1_best.pt"
-    LOCAL_THRESHOLDS_PATH: str = "model/optimal_thresholds.json"
-    LOCAL_CONCEPT_LIST_PATH: str = "model/concept_list.json"
-    LOCAL_ICD10_INFO_PATH: str = "model/top50_icd10_info.json"
+    S3_FULLCODE_MODEL_KEY: str = "models/fullcode/s10/model.pt"
+    S3_FULLCODE_THRESHOLDS_KEY: str = "models/fullcode/s10/thresholds.json"
+    S3_FULLCODE_LABELS_KEY: str = "models/fullcode/s10/label_vocab.json"
+    S3_FULLCODE_BANK_KEY: str = "models/fullcode/s10/concept_bank.jsonl"
+    S3_FULLCODE_TITLES_KEY: str = "models/fullcode/s10/code_titles.json"
+    LOCAL_FULLCODE_DIR: str = "artifacts/fullcode"
+    # Mounted as a docker volume so the 758 MB checkpoint survives `docker rm`
+    # and an instance stop/start, and is pulled once rather than every boot.
+    FULLCODE_CACHE_DIR: str = "/var/lib/shifamind/fullcode"
+    # 0 means use the validation-selected micro threshold from thresholds.json.
+    THRESHOLD: float = 0
     DEVICE: str = "cpu"
 
     # App

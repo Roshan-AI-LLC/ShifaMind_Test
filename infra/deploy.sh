@@ -13,7 +13,15 @@ echo "==> ShifaMind backend deploy ($DEPLOY_TARGET)"
 
 # ── Build Docker image ────────────────────────────────────────────────────────
 echo "--> Building Docker image..."
-docker build -f infra/Dockerfile.backend -t "$APP_NAME:$IMAGE_TAG" .
+# --platform is not optional. The EC2 box is x86_64 (c6a.xlarge); an Apple
+# Silicon Mac builds arm64 by default, and the resulting image dies on the
+# instance with "exec format error" only AFTER a ~2GB transfer. Buildx emulates
+# amd64 through QEMU, which is correct but slow: installing torch this way takes
+# a long time. If that is intolerable, build ON the box instead (native, 4 vCPU)
+# rather than dropping this flag.
+BUILD_PLATFORM="${BUILD_PLATFORM:-linux/amd64}"
+docker build --platform "$BUILD_PLATFORM" \
+  -f infra/Dockerfile.backend -t "$APP_NAME:$IMAGE_TAG" .
 
 if [[ "$DEPLOY_TARGET" == "ecr" ]]; then
   # ── Push to ECR ───────────────────────────────────────────────────────────
@@ -52,13 +60,32 @@ elif [[ "$DEPLOY_TARGET" == "ec2" ]]; then
 
   echo "--> Loading and restarting on EC2..."
   ssh -i "$SSH_KEY" "$EC2_USER@$EC2_HOST" << 'REMOTE'
+    set -e
+
+    # Tag whatever is running now, BEFORE it is replaced. Doing this by hand is
+    # a step that gets skipped exactly when it is needed most.
+    if docker image inspect shifamind-api:latest >/dev/null 2>&1; then
+      docker tag shifamind-api:latest "shifamind-api:previous-$(date +%Y%m%d%H%M%S)"
+      docker tag shifamind-api:latest shifamind-api:previous
+      echo "tagged rollback image: shifamind-api:previous"
+    fi
+
     docker load < /tmp/shifamind-api.tar.gz
+
+    # The artifact cache must outlive the container: a `docker rm` without this
+    # means re-downloading 758MB from S3 on the next boot, which is the whole
+    # cold-start cost this server is trying to avoid. uid 1001 is the
+    # `shifamind` user the image runs as.
+    sudo mkdir -p /var/lib/shifamind/fullcode
+    sudo chown -R 1001:1001 /var/lib/shifamind
+
     docker stop shifamind-api 2>/dev/null || true
     docker rm shifamind-api 2>/dev/null || true
     docker run -d \
       --name shifamind-api \
       --restart unless-stopped \
       -p 8000:8000 \
+      -v /var/lib/shifamind/fullcode:/var/lib/shifamind/fullcode \
       --env-file /home/ubuntu/shifamind/.env \
       shifamind-api:latest
     docker ps | grep shifamind

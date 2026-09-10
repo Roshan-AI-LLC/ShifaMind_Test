@@ -15,42 +15,94 @@ import { predict, submitReview, type PredictResponse } from "@/lib/api"
 import { persistWorkspaceChatContext } from "@/lib/chat-context"
 
 // ── Shape adapters ─────────────────────────────────────────────────────────
+//
+// The model returns concepts PER CODE, each with the exact signed contribution
+// it made to that code's logit. The previous version attached the same global
+// top-3 concepts to every prediction, which looked like attribution and was not.
+// These adapters carry the real per-code evidence through.
 
 function toPredictionsList(data: PredictResponse) {
-  return data.predictions.map((p) => ({
-    rank: p.rank,
-    code: p.code,
-    description: p.description,
-    confidence: p.confidence,
-    isActive: p.above_threshold,
-    concepts: data.activated_concepts
-      .filter((c) => c.active)
-      .slice(0, 3)
-      .map((c) => ({ name: c.concept, score: c.score })),
+  return data.codes.map((c, i) => ({
+    rank: i + 1,
+    code: c.code,
+    description: c.title || c.code,
+    confidence: c.probability,
+    isActive: c.above_threshold,
+    concepts: c.concepts.map((cc) => ({
+      name: cc.name,
+      // Kept for the badge's legacy percent mode; `contribution` wins when set.
+      score: cc.gate,
+      contribution: cc.contribution,
+      span: cc.spans[0]?.surface ?? null,
+      assertion: cc.spans[0]?.assertion ?? null,
+    })),
   }))
 }
 
+/**
+ * One row per distinct concept, ranked by the LARGEST absolute contribution it
+ * made to any predicted code.
+ *
+ * Not by gate. The gate is saturated: essentially every routed concept sits at
+ * 1.00, so a gate-ranked list is a list sorted by a constant, which is why this
+ * tab used to render fifty chips all reading "100%". The contribution is the
+ * quantity that actually varies, from about +10 down to -0.004, and it carries
+ * the information a coder wants: which concept moved a prediction, and which
+ * prediction it moved.
+ */
 function toConceptsList(data: PredictResponse) {
-  return data.activated_concepts.map((c) => ({
-    name: c.concept,
-    score: c.score,
-    active: c.active,
-  }))
+  const best = new Map<
+    string,
+    {
+      name: string
+      contribution: number
+      code: string
+      codeTitle: string
+      gate: number
+      span: string | null
+      assertion: string | null
+    }
+  >()
+  for (const code of data.codes) {
+    for (const cc of code.concepts) {
+      const prev = best.get(cc.concept)
+      if (!prev || Math.abs(cc.contribution) > Math.abs(prev.contribution)) {
+        best.set(cc.concept, {
+          name: cc.name,
+          contribution: cc.contribution,
+          code: code.code,
+          codeTitle: code.title || code.code,
+          gate: cc.gate,
+          span: cc.spans[0]?.surface ?? null,
+          assertion: cc.spans[0]?.assertion ?? null,
+        })
+      }
+    }
+  }
+  return [...best.values()].sort(
+    (a, b) => Math.abs(b.contribution) - Math.abs(a.contribution)
+  )
 }
 
 function toAttributions(data: PredictResponse) {
-  const activeConcepts = data.activated_concepts.filter((c) => c.active).map((c) => c.concept)
-  return data.predictions
-    .filter((p) => p.above_threshold)
-    .map((p) => ({
-      diagnosisCode: p.code,
-      diagnosisName: p.description,
-      concepts: activeConcepts.slice(0, 3),
+  return data.codes
+    .filter((c) => c.above_threshold)
+    .map((c) => ({
+      diagnosisCode: c.code,
+      diagnosisName: c.title || c.code,
+      // Only supporting evidence in this view; objections have their own sign
+      // in the diagnoses tab and would read as support in a bare name list.
+      concepts: c.concepts
+        .filter((cc) => cc.contribution > 0)
+        .map((cc) => cc.name),
     }))
 }
 
 const DIAGNOSIS_LIST_LIMIT = 5
-const EXPECTED_INFERENCE_SEC = 60
+// Measured: p50 939 ms, p95 1,242 ms on CPU for a ~2,900-token note. The old
+// value of 60 was for the 50-code model on very different hardware, and a
+// progress bar that promises a minute for a one-second job reads as broken.
+const EXPECTED_INFERENCE_SEC = 3
 
 // ── Page ──────────────────────────────────────────────────────────────────
 
@@ -112,9 +164,10 @@ export default function WorkspacePage() {
     ? toPredictionsList(result).slice(0, DIAGNOSIS_LIST_LIMIT)
     : []
   const concepts = result ? toConceptsList(result) : []
+  const suppressed = result?.suppressed ?? []
   const attributions = result ? toAttributions(result) : []
   const activeDiagnoses = result
-    ? result.predictions.filter((p) => p.above_threshold).length
+    ? result.codes.filter((c) => c.above_threshold).length
     : 0
 
   return (
@@ -223,7 +276,7 @@ export default function WorkspacePage() {
                   </span>
                   <span className="text-xs text-foreground-muted flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {result?.metadata.inference_time_ms}ms inference
+                    {result?.latency_ms}ms inference
                   </span>
                 </div>
                 <h3 className="font-semibold text-foreground">
@@ -248,9 +301,15 @@ export default function WorkspacePage() {
 
               <TabsContent value="diagnoses" className="space-y-3">
                 <PredictionsList predictions={predictions} />
-                {result && result.predictions.length > DIAGNOSIS_LIST_LIMIT && (
+                {result?.no_code_met_threshold && (
+                  <p className="text-xs text-gold text-center">
+                    No code passed the {result.threshold.toFixed(2)} threshold.
+                    Showing the highest-ranked codes anyway.
+                  </p>
+                )}
+                {result && result.codes.length > DIAGNOSIS_LIST_LIMIT && (
                   <p className="text-xs text-foreground-muted text-center">
-                    Showing top {DIAGNOSIS_LIST_LIMIT} of {result.predictions.length} ranked codes.
+                    Showing top {DIAGNOSIS_LIST_LIMIT} of {result.codes.length} ranked codes.
                   </p>
                 )}
                 <button
@@ -268,7 +327,7 @@ export default function WorkspacePage() {
               </TabsContent>
 
               <TabsContent value="concepts">
-                <ConceptsTab concepts={concepts} />
+                <ConceptsTab concepts={concepts} suppressed={suppressed} />
               </TabsContent>
 
               <TabsContent value="attribution">

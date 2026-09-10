@@ -1,21 +1,25 @@
 """
-seed_doctors.py — Create 15 doctor accounts in Supabase Auth + doctors table.
+seed_doctors.py — Create 15 demo doctor accounts in Supabase Auth + doctors table.
 
 Usage:
-    pip install supabase python-dotenv
-    SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... python scripts/seed_doctors.py
+    python scripts/seed_doctors.py
 
-The script is idempotent: it skips accounts whose email already exists.
+Uses the Supabase REST API directly rather than `supabase-py`, which rejects the
+newer `sb_secret_…` service keys as invalid JWTs. Idempotent: existing accounts
+are found and their doctors row is refreshed rather than failing.
 """
 
-import os
 import sys
+from pathlib import Path
+
 from dotenv import load_dotenv
 
-load_dotenv()
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-SUPABASE_URL = os.environ["SUPABASE_URL"]
-SERVICE_ROLE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+import os  # noqa: E402
+from _supa import create_user, env, upsert_doctor  # noqa: E402
+
 DEFAULT_PASSWORD = os.environ.get("SEED_PASSWORD", "ShifaMind2025!")
 
 DOCTORS = [
@@ -40,28 +44,22 @@ DOCTORS = [
 
 
 def main():
-    try:
-        from supabase import create_client
-    except ImportError:
-        print("Error: supabase package not installed. Run: pip install supabase")
-        sys.exit(1)
+    import httpx
 
-    client = create_client(SUPABASE_URL, SERVICE_ROLE_KEY)
-    created, skipped, failed = 0, 0, 0
+    base, key = env()
+    print(f"target: {base}")
+    created = updated = failed = 0
 
-    for full_name, specialty, institution, email, role in DOCTORS:
-        print(f"  Creating {email} ({role})...", end=" ")
-        try:
-            # Create auth user
-            auth_resp = client.auth.admin.create_user({
-                "email": email,
-                "password": DEFAULT_PASSWORD,
-                "email_confirm": True,
-            })
-            user_id = auth_resp.user.id
+    with httpx.Client(timeout=30.0) as client:
+        for full_name, specialty, institution, email, role in DOCTORS:
+            print(f"  {email:32} ({role})...", end=" ", flush=True)
+            user_id, status = create_user(client, base, key, email, DEFAULT_PASSWORD)
+            if user_id is None:
+                print(f"FAILED — {status}")
+                failed += 1
+                continue
 
-            # Upsert doctor profile
-            client.table("doctors").upsert({
+            ok, msg = upsert_doctor(client, base, key, {
                 "id": user_id,
                 "full_name": full_name,
                 "specialty": specialty,
@@ -69,23 +67,23 @@ def main():
                 "email": email,
                 "role": role,
                 "is_active": True,
-            }).execute()
-
-            print(f"OK (id={user_id[:8]}...)")
-            created += 1
-
-        except Exception as e:
-            err = str(e)
-            if "already been registered" in err or "already exists" in err:
-                print("SKIPPED (already exists)")
-                skipped += 1
-            else:
-                print(f"FAILED — {err}")
+            })
+            if not ok:
+                print(f"auth {status}, but doctors row FAILED — {msg}")
                 failed += 1
+            elif status == "created":
+                print(f"created ({user_id[:8]}...)")
+                created += 1
+            else:
+                print(f"already existed, row refreshed ({user_id[:8]}...)")
+                updated += 1
 
-    print(f"\nDone: {created} created, {skipped} skipped, {failed} failed")
-    print(f"Default password: {DEFAULT_PASSWORD}")
+    print(f"\n{created} created, {updated} refreshed, {failed} failed")
+    if failed:
+        return 1
+    print(f"password for all demo accounts: {DEFAULT_PASSWORD}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

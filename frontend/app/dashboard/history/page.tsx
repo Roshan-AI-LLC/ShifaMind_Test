@@ -47,9 +47,13 @@ export default function HistoryPage() {
           return
         }
         const entries: HistoryEntry[] = data.map((row) => {
+          // predicted_codes now stores {code, title, probability}; older rows
+          // carry {code, description, confidence}. Read both so history does
+          // not go blank for anything written before the full-code deploy.
           const preds: any[] = row.predicted_codes ?? []
-          const topAbove = preds.filter((p) => p.above_threshold)
-          const topDiag = topAbove[0]?.description ?? preds[0]?.description ?? "Unknown"
+          const label = (p: any) => p?.title ?? p?.description ?? p?.code ?? "Unknown"
+          const conf = (p: any) => p?.probability ?? p?.confidence ?? 0
+          const topDiag = label(preds[0])
           return {
             id: row.id,
             date: new Date(row.created_at).toLocaleString(),
@@ -57,8 +61,8 @@ export default function HistoryPage() {
             content: row.input_text ?? "",
             codes: preds.slice(0, 3).map((p) => ({
               code: p.code,
-              label: p.description,
-              confidence: p.confidence,
+              label: label(p),
+              confidence: conf(p),
             })),
           }
         })
